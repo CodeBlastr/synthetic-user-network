@@ -16,6 +16,7 @@ SUN is a TypeScript + Playwright synthetic-user test harness. Right now it is fo
 - Read `docs/RULES.md` before changing workflow or repository conventions.
 - Keep smoke flows deterministic, evidence-driven, and easy to diagnose from logs and artifacts.
 - Prefer focused changes in adapters and runners over broad abstractions.
+- When SUN is evaluating Chirpper, do not modify `../chirpper` merely to make a test pass. Record the blocker in artifacts/results first, and only change Chirpper in a separate improvement task that responds to the evidence.
 - Treat `artifacts/runs/` as generated output unless the task explicitly asks to keep artifacts.
 - If behavior, structure, or workflow changes, update the relevant docs in `docs/`.
 

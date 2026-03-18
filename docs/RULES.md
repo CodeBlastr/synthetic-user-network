@@ -10,6 +10,7 @@
  - Backwards compatibility is not required when implementing or changing features.
  - Always update CHANGELOG.md, all md files located in "docs" with the latest information before making a commit.
  - Always commit and push the current branch to github with a detailed commit message after EVERY task! 
+ - When SUN evaluates Chirpper, do not modify Chirpper merely to make the test pass. Record the blocker first, then handle any Chirpper fix as a separate product-improvement task.
 
  - If a prompt or plan deviates from software development best practices you must call it out and provide a human the chance to confirm that we indeed do want to deviate from accepted best practices. 
 
