@@ -1,0 +1,157 @@
+{
+  "runId": "305c1163-37c5-4c95-bd0e-e29de6a433dc",
+  "adapter": "chirpper",
+  "runType": "smoke",
+  "sunGitCommit": "bb0939cfa7c04df260b0a8d6d6c066a97431e7a1",
+  "chirpperBaseUrl": "http://localhost:3000",
+  "testBranch": "existing_token_claim",
+  "startedAt": "2026-03-18T19:46:29.875Z",
+  "endedAt": "2026-03-18T19:46:40.566Z",
+  "durationMs": 10691,
+  "stepsAttempted": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsSucceeded": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsFailed": [],
+  "stepResults": [
+    {
+      "step": "config",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:46:29.879Z",
+      "endedAt": "2026-03-18T19:46:29.879Z",
+      "elapsedMs": 0
+    },
+    {
+      "step": "healthcheck",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:46:29.879Z",
+      "endedAt": "2026-03-18T19:46:30.257Z",
+      "elapsedMs": 378
+    },
+    {
+      "step": "setup_invite",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:46:30.257Z",
+      "endedAt": "2026-03-18T19:46:33.352Z",
+      "elapsedMs": 3095
+    },
+    {
+      "step": "open_browser",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:46:33.352Z",
+      "endedAt": "2026-03-18T19:46:34.417Z",
+      "elapsedMs": 1065
+    },
+    {
+      "step": "browser_smoke",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:46:34.417Z",
+      "endedAt": "2026-03-18T19:46:40.514Z",
+      "elapsedMs": 6097
+    }
+  ],
+  "inviteUrl": "http://localhost:3000/i/hdOUJWJDrVJg0H7meC3ZbW8MZzsp6aTl",
+  "finalUrl": "http://localhost:3000/token?invite_saved=1",
+  "screenshotsTaken": [
+    {
+      "label": "homepage",
+      "path": "2026-03-18T19-46-29Z-homepage.png"
+    },
+    {
+      "label": "final_state",
+      "path": "2026-03-18T19-46-29Z-final_state.png"
+    }
+  ],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "journeyEvents": [
+    {
+      "timestamp": "2026-03-18T19:46:36.764Z",
+      "type": "milestone",
+      "name": "homepage_home_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:46:36.768Z",
+      "type": "milestone",
+      "name": "homepage_invites_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:46:37.092Z",
+      "type": "milestone",
+      "name": "homepage_loaded",
+      "details": {
+        "url": "http://localhost:3000/"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:46:37.092Z",
+      "type": "branch",
+      "name": "journey_selected",
+      "details": {
+        "testBranch": "existing_token_claim"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:46:37.095Z",
+      "type": "milestone",
+      "name": "restored_identity_seeded",
+      "details": {
+        "tokenId": "8cc0c71762fde2726a85"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:46:39.371Z",
+      "type": "milestone",
+      "name": "existing_invite_heading_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:46:39.376Z",
+      "type": "milestone",
+      "name": "existing_invite_explainer_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:46:39.376Z",
+      "type": "branch",
+      "name": "visitor_mode_detected",
+      "details": {
+        "sessionMode": "restored_identity"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:46:39.376Z",
+      "type": "branch",
+      "name": "next_action_selected",
+      "details": {
+        "action": "save_invite_for_later"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:46:40.318Z",
+      "type": "milestone",
+      "name": "existing_final_token_page_visible"
+    }
+  ],
+  "failureMessage": null,
+  "verdict": {
+    "app_reachable": true,
+    "homepage_loaded": true,
+    "invite_flow_completed": true,
+    "token_state_persisted": true,
+    "session_mode": "restored_identity",
+    "first_time_visitor": false,
+    "identity_created": false,
+    "invite_understood": true,
+    "next_action_clear": true,
+    "overall_pass": true
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "runId": "cc9db6fc-e820-4027-87d9-a68158151874",
+  "adapter": "chirpper",
+  "runType": "smoke",
+  "sunGitCommit": "bb0939cfa7c04df260b0a8d6d6c066a97431e7a1",
+  "chirpperBaseUrl": "http://localhost:3000",
+  "testBranch": "new_visitor_invite_claim",
+  "startedAt": "2026-03-18T20:26:45.037Z",
+  "endedAt": "2026-03-18T20:26:53.986Z",
+  "durationMs": 8949,
+  "stepsAttempted": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsSucceeded": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsFailed": [],
+  "stepResults": [
+    {
+      "step": "config",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:45.045Z",
+      "endedAt": "2026-03-18T20:26:45.045Z",
+      "elapsedMs": 0
+    },
+    {
+      "step": "healthcheck",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:45.045Z",
+      "endedAt": "2026-03-18T20:26:45.184Z",
+      "elapsedMs": 139
+    },
+    {
+      "step": "setup_invite",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:45.184Z",
+      "endedAt": "2026-03-18T20:26:48.546Z",
+      "elapsedMs": 3362
+    },
+    {
+      "step": "open_browser",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:48.546Z",
+      "endedAt": "2026-03-18T20:26:49.720Z",
+      "elapsedMs": 1174
+    },
+    {
+      "step": "browser_smoke",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:49.720Z",
+      "endedAt": "2026-03-18T20:26:53.935Z",
+      "elapsedMs": 4215
+    }
+  ],
+  "inviteUrl": "http://localhost:3000/i/nzPa6sRwccXGHAyyuoimQhY4mDU11ec_",
+  "finalUrl": "http://localhost:3000/token?invite_saved=1",
+  "screenshotsTaken": [
+    {
+      "label": "homepage",
+      "path": "2026-03-18T20-26-45Z-homepage.png"
+    },
+    {
+      "label": "final_state",
+      "path": "2026-03-18T20-26-45Z-final_state.png"
+    }
+  ],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "journeyEvents": [
+    {
+      "timestamp": "2026-03-18T20:26:51.525Z",
+      "type": "milestone",
+      "name": "homepage_home_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:51.531Z",
+      "type": "milestone",
+      "name": "homepage_invites_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:51.873Z",
+      "type": "milestone",
+      "name": "homepage_loaded",
+      "details": {
+        "url": "http://localhost:3000/"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:51.876Z",
+      "type": "milestone",
+      "name": "clean_context_verified",
+      "details": {
+        "hasStoredIdentity": false,
+        "hasSessionCookie": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:51.876Z",
+      "type": "branch",
+      "name": "journey_selected",
+      "details": {
+        "testBranch": "new_visitor_invite_claim"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.364Z",
+      "type": "milestone",
+      "name": "new_visitor_invite_heading_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.364Z",
+      "type": "branch",
+      "name": "visitor_mode_detected",
+      "details": {
+        "sessionMode": "new_identity"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.369Z",
+      "type": "milestone",
+      "name": "invite_review_explanation_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.373Z",
+      "type": "milestone",
+      "name": "invite_claim_importance_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.376Z",
+      "type": "milestone",
+      "name": "future_identity_panel_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.379Z",
+      "type": "milestone",
+      "name": "next_action_explainer_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.491Z",
+      "type": "milestone",
+      "name": "identity_acknowledged"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.491Z",
+      "type": "branch",
+      "name": "next_action_selected",
+      "details": {
+        "action": "save_invite_for_later"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.846Z",
+      "type": "milestone",
+      "name": "new_visitor_final_token_page_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:53.935Z",
+      "type": "milestone",
+      "name": "identity_persisted_after_claim"
+    }
+  ],
+  "failureMessage": null,
+  "verdict": {
+    "app_reachable": true,
+    "homepage_loaded": true,
+    "invite_flow_completed": true,
+    "token_state_persisted": true,
+    "session_mode": "new_identity",
+    "first_time_visitor": true,
+    "identity_created": true,
+    "invite_understood": true,
+    "next_action_clear": true,
+    "overall_pass": true
+  },
+  "evaluation": {
+    "journey_status": "pass",
+    "blocker_type": "unknown",
+    "user_value_score": 5,
+    "trust_graph_readiness": 5,
+    "recommended_priority": "monitor",
+    "site_readiness": "ready_for_invited_entry",
+    "readiness_reason": "New visitor can create and persist identity from an invite in local development."
+  }
+}

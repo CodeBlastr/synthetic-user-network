@@ -1,0 +1,198 @@
+{
+  "runId": "4e9c6c90-3fe2-4b12-bbfc-00cb03e7cdd4",
+  "adapter": "chirpper",
+  "runType": "smoke",
+  "sunGitCommit": "bb0939cfa7c04df260b0a8d6d6c066a97431e7a1",
+  "chirpperBaseUrl": "http://localhost:3000",
+  "testBranch": "new_visitor_invite_claim",
+  "startedAt": "2026-03-18T19:47:53.366Z",
+  "endedAt": "2026-03-18T19:48:32.448Z",
+  "durationMs": 39082,
+  "stepsAttempted": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsSucceeded": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsFailed": [],
+  "stepResults": [
+    {
+      "step": "config",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:47:53.370Z",
+      "endedAt": "2026-03-18T19:47:53.370Z",
+      "elapsedMs": 0
+    },
+    {
+      "step": "healthcheck",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:47:53.371Z",
+      "endedAt": "2026-03-18T19:47:53.670Z",
+      "elapsedMs": 299
+    },
+    {
+      "step": "setup_invite",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:47:53.670Z",
+      "endedAt": "2026-03-18T19:47:56.262Z",
+      "elapsedMs": 2592
+    },
+    {
+      "step": "open_browser",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:47:56.262Z",
+      "endedAt": "2026-03-18T19:47:57.115Z",
+      "elapsedMs": 853
+    },
+    {
+      "step": "browser_smoke",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:47:57.116Z",
+      "endedAt": "2026-03-18T19:48:32.407Z",
+      "elapsedMs": 35291
+    }
+  ],
+  "inviteUrl": "http://localhost:3000/i/mHq79oU37Pkvmp7tdVceYVf90IwS7c_I",
+  "finalUrl": "http://localhost:3000/i/mHq79oU37Pkvmp7tdVceYVf90IwS7c_I",
+  "screenshotsTaken": [
+    {
+      "label": "homepage",
+      "path": "2026-03-18T19-47-53Z-homepage.png"
+    },
+    {
+      "label": "final_state",
+      "path": "2026-03-18T19-47-53Z-final_state.png"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://localhost:3000/api/chirpper-session",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "http://localhost:3000/api/chirpper-session",
+      "status": 503,
+      "method": "POST",
+      "resourceType": "fetch"
+    }
+  ],
+  "journeyEvents": [
+    {
+      "timestamp": "2026-03-18T19:47:59.443Z",
+      "type": "milestone",
+      "name": "homepage_home_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:47:59.447Z",
+      "type": "milestone",
+      "name": "homepage_invites_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:47:59.769Z",
+      "type": "milestone",
+      "name": "homepage_loaded",
+      "details": {
+        "url": "http://localhost:3000/"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:47:59.772Z",
+      "type": "milestone",
+      "name": "clean_context_verified",
+      "details": {
+        "hasStoredIdentity": false,
+        "hasSessionCookie": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:47:59.772Z",
+      "type": "branch",
+      "name": "journey_selected",
+      "details": {
+        "testBranch": "new_visitor_invite_claim"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:48:01.992Z",
+      "type": "milestone",
+      "name": "new_visitor_invite_heading_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:01.992Z",
+      "type": "branch",
+      "name": "visitor_mode_detected",
+      "details": {
+        "sessionMode": "new_identity"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:48:01.997Z",
+      "type": "milestone",
+      "name": "invite_review_explanation_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:02.000Z",
+      "type": "milestone",
+      "name": "invite_claim_importance_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:02.002Z",
+      "type": "milestone",
+      "name": "future_identity_panel_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:02.005Z",
+      "type": "milestone",
+      "name": "next_action_explainer_visible"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:02.100Z",
+      "type": "milestone",
+      "name": "identity_acknowledged"
+    },
+    {
+      "timestamp": "2026-03-18T19:48:02.101Z",
+      "type": "branch",
+      "name": "next_action_selected",
+      "details": {
+        "action": "save_invite_for_later"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T19:48:32.407Z",
+      "type": "block",
+      "name": "journey_failed",
+      "details": {
+        "error": "page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
+      }
+    }
+  ],
+  "failureMessage": "Smoke verdict failed: token state was not persisted, 1 console error(s), 1 network 4xx/5xx response(s), journey block(s): journey_failed.",
+  "verdict": {
+    "app_reachable": true,
+    "homepage_loaded": true,
+    "invite_flow_completed": false,
+    "token_state_persisted": false,
+    "session_mode": "new_identity",
+    "first_time_visitor": true,
+    "identity_created": false,
+    "invite_understood": true,
+    "next_action_clear": true,
+    "overall_pass": false
+  }
+}

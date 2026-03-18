@@ -1,0 +1,192 @@
+{
+  "runId": "537a21d1-0161-4f95-9483-8f3d50db25d0",
+  "adapter": "chirpper",
+  "runType": "smoke",
+  "sunGitCommit": "bb0939cfa7c04df260b0a8d6d6c066a97431e7a1",
+  "chirpperBaseUrl": "http://localhost:3000",
+  "testBranch": "new_visitor_invite_claim",
+  "startedAt": "2026-03-18T20:26:03.505Z",
+  "endedAt": "2026-03-18T20:26:15.265Z",
+  "durationMs": 11760,
+  "stepsAttempted": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsSucceeded": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsFailed": [],
+  "stepResults": [
+    {
+      "step": "config",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:03.512Z",
+      "endedAt": "2026-03-18T20:26:03.512Z",
+      "elapsedMs": 0
+    },
+    {
+      "step": "healthcheck",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:03.512Z",
+      "endedAt": "2026-03-18T20:26:04.029Z",
+      "elapsedMs": 517
+    },
+    {
+      "step": "setup_invite",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:04.029Z",
+      "endedAt": "2026-03-18T20:26:06.882Z",
+      "elapsedMs": 2853
+    },
+    {
+      "step": "open_browser",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:06.882Z",
+      "endedAt": "2026-03-18T20:26:07.950Z",
+      "elapsedMs": 1068
+    },
+    {
+      "step": "browser_smoke",
+      "status": "passed",
+      "startedAt": "2026-03-18T20:26:07.950Z",
+      "endedAt": "2026-03-18T20:26:15.210Z",
+      "elapsedMs": 7260
+    }
+  ],
+  "inviteUrl": "http://localhost:3000/i/OJR8iAJzTJGPhnHkn6s4X3vtwN0A85EI",
+  "finalUrl": "http://localhost:3000/token?invite_saved=1",
+  "screenshotsTaken": [
+    {
+      "label": "homepage",
+      "path": "2026-03-18T20-26-03Z-homepage.png"
+    },
+    {
+      "label": "final_state",
+      "path": "2026-03-18T20-26-03Z-final_state.png"
+    }
+  ],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "journeyEvents": [
+    {
+      "timestamp": "2026-03-18T20:26:10.373Z",
+      "type": "milestone",
+      "name": "homepage_home_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:10.377Z",
+      "type": "milestone",
+      "name": "homepage_invites_nav_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:10.715Z",
+      "type": "milestone",
+      "name": "homepage_loaded",
+      "details": {
+        "url": "http://localhost:3000/"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:10.719Z",
+      "type": "milestone",
+      "name": "clean_context_verified",
+      "details": {
+        "hasStoredIdentity": false,
+        "hasSessionCookie": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:10.719Z",
+      "type": "branch",
+      "name": "journey_selected",
+      "details": {
+        "testBranch": "new_visitor_invite_claim"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.008Z",
+      "type": "milestone",
+      "name": "new_visitor_invite_heading_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.008Z",
+      "type": "branch",
+      "name": "visitor_mode_detected",
+      "details": {
+        "sessionMode": "new_identity"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.013Z",
+      "type": "milestone",
+      "name": "invite_review_explanation_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.016Z",
+      "type": "milestone",
+      "name": "invite_claim_importance_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.020Z",
+      "type": "milestone",
+      "name": "future_identity_panel_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.023Z",
+      "type": "milestone",
+      "name": "next_action_explainer_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.138Z",
+      "type": "milestone",
+      "name": "identity_acknowledged"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:13.138Z",
+      "type": "branch",
+      "name": "next_action_selected",
+      "details": {
+        "action": "save_invite_for_later"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T20:26:15.114Z",
+      "type": "milestone",
+      "name": "new_visitor_final_token_page_visible"
+    },
+    {
+      "timestamp": "2026-03-18T20:26:15.210Z",
+      "type": "milestone",
+      "name": "identity_persisted_after_claim"
+    }
+  ],
+  "failureMessage": null,
+  "verdict": {
+    "app_reachable": true,
+    "homepage_loaded": true,
+    "invite_flow_completed": true,
+    "token_state_persisted": true,
+    "session_mode": "new_identity",
+    "first_time_visitor": true,
+    "identity_created": true,
+    "invite_understood": true,
+    "next_action_clear": true,
+    "overall_pass": true
+  },
+  "evaluation": {
+    "journey_status": "pass",
+    "blocker_type": "unknown",
+    "user_value_score": 5,
+    "trust_graph_readiness": 5,
+    "recommended_priority": "monitor",
+    "site_readiness": "ready",
+    "readiness_reason": "Core journey passed with no blocking product issues."
+  }
+}

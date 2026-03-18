@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "smoke": "tsx src/runners/smoke.ts",
+    "smoke:restored-identity": "SUN_SMOKE_PATH=existing_token_claim tsx src/runners/smoke.ts",
+    "smoke:new-visitor": "SUN_SMOKE_PATH=new_visitor_invite_claim tsx src/runners/smoke.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

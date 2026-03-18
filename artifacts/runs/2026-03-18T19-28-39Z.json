@@ -1,0 +1,86 @@
+{
+  "runId": "cf7da567-2105-45be-995f-bcc015e17448",
+  "adapter": "chirpper",
+  "runType": "smoke",
+  "sunGitCommit": "bb0939cfa7c04df260b0a8d6d6c066a97431e7a1",
+  "chirpperBaseUrl": "http://localhost:3000",
+  "testBranch": "existing_token_claim",
+  "startedAt": "2026-03-18T19:28:39.756Z",
+  "endedAt": "2026-03-18T19:28:58.710Z",
+  "durationMs": 18954,
+  "stepsAttempted": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsSucceeded": [
+    "config",
+    "healthcheck",
+    "setup_invite",
+    "open_browser",
+    "browser_smoke"
+  ],
+  "stepsFailed": [],
+  "stepResults": [
+    {
+      "step": "config",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:28:39.761Z",
+      "endedAt": "2026-03-18T19:28:39.761Z",
+      "elapsedMs": 0
+    },
+    {
+      "step": "healthcheck",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:28:39.761Z",
+      "endedAt": "2026-03-18T19:28:41.405Z",
+      "elapsedMs": 1644
+    },
+    {
+      "step": "setup_invite",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:28:41.405Z",
+      "endedAt": "2026-03-18T19:28:48.464Z",
+      "elapsedMs": 7059
+    },
+    {
+      "step": "open_browser",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:28:48.464Z",
+      "endedAt": "2026-03-18T19:28:49.677Z",
+      "elapsedMs": 1213
+    },
+    {
+      "step": "browser_smoke",
+      "status": "passed",
+      "startedAt": "2026-03-18T19:28:49.677Z",
+      "endedAt": "2026-03-18T19:28:58.663Z",
+      "elapsedMs": 8986
+    }
+  ],
+  "inviteUrl": "http://localhost:3000/i/0Ebf7Mu5S4pzKjCsPtAai8RJMBB019Yj",
+  "finalUrl": "http://localhost:3000/token?invite_saved=1",
+  "screenshotsTaken": [
+    {
+      "label": "homepage",
+      "path": "2026-03-18T19-28-39Z-homepage.png"
+    },
+    {
+      "label": "final_state",
+      "path": "2026-03-18T19-28-39Z-final_state.png"
+    }
+  ],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "failureMessage": null,
+  "verdict": {
+    "app_reachable": true,
+    "homepage_loaded": true,
+    "invite_flow_completed": true,
+    "token_state_persisted": true,
+    "session_mode": "restored_identity",
+    "overall_pass": true
+  }
+}
