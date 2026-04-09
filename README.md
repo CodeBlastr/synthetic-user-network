@@ -1,54 +1,50 @@
 # synthetic-user-network
 
-An autonomous network of users for testing real world usage of your application.
+SUN is a dockerized, prompt-driven recommendation tool for browser evaluation on `http://localhost:3020`.
 
-## Chirpper Smoke Test
+You enter a prompt describing the browser test you want reviewed. SUN then:
 
-SUN now includes a first browser-driven smoke path for a local Chirpper instance.
+1. Creates an AI-backed execution plan.
+2. Waits for you to approve the plan.
+3. Runs a Playwright evidence capture.
+4. Streams screenshot previews and execution events while the run is active.
+5. Publishes a review page with one recommendation, the reasoning, screenshots, and copy-paste Codex markdown.
 
-1. Start Chirpper locally on `http://localhost:3000`.
-2. From `sun/`, install dependencies with `npm install`.
-3. Run `npm run smoke`.
+## Primary MVP
 
-The smoke runner will:
-
-- call `GET /api/health`
-- open the Chirpper homepage
-- mint a fresh local root invite for setup
-- open the invite page in a browser
-- claim the invite with `Save invite for later`
-- verify the redirect to `/token`
-- print structured JSON logs for each step
-
-Notes:
-
-- If Chirpper is running in Docker on `localhost:3000`, SUN auto-detects the container and creates the invite inside that container so the app sees the same D1 state it is serving.
-- The current local Chirpper setup does not expose `CHIRPPER_SESSION_SECRET`, so the smoke path restores a valid token into browser `localStorage` first and then verifies the real invite-claim-to-wallet flow through the UI.
-
-## Multi-User Trust Graph Smoke
-
-SUN also includes a real three-identity lineage journey for local Chirpper:
-
-1. Token A claims an invite and publishes a post.
-2. A's post earns reward invites through real vote activity.
-3. A reveals one wallet invite for Token B.
-4. Token B claims that invite, publishes a post, and then reveals a child invite for Token C.
-5. Token C claims the invite and persists identity.
-6. Token B comments on A's post.
-7. Token C upvotes B's comment.
-
-Run it with:
+Run the MVP in Docker:
 
 ```bash
+docker compose up --build
+```
+
+Then open `http://localhost:3020`, paste a prompt, generate a plan, approve it, and review the resulting page under `/reviews/<run-id>`.
+
+If you prefer to run it directly on the host, use:
+
+```bash
+npm run mvp
+```
+
+Required environment:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` or the default `gpt-5-mini`
+- `PORT` or the default `3020`
+
+The MVP stores run artifacts under `artifacts/runs/` and exposes the review page from the same server.
+
+## Legacy Smoke Runs
+
+The existing Chirpper smoke runners remain available as secondary workflows for targeted verification and historical coverage. They are not the primary product story anymore.
+
+Available scripts:
+
+```bash
+npm run smoke
+npm run smoke:restored-identity
+npm run smoke:new-visitor
 npm run smoke:multi-user-lineage
 ```
 
-Artifacts are written under `artifacts/runs/` as JSON, markdown, and screenshots. The lineage artifact records:
-
-- `lineage_established`
-- `multi_user_flow_completed`
-- `trust_graph_signal_observed`
-- `identities_involved`
-- `invite_edges_completed`
-- `content_objects_created`
-- `interactions_completed`
+Those runners still write structured JSON, markdown, and screenshots into `artifacts/runs/`.

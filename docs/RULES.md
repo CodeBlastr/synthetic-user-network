@@ -7,6 +7,7 @@
  - docs/DECISIONS.md (if it exists) is a running stream of high level decisions made so that we always have a replayable tree of why have gotten to where we are. It is appendable only. 
  - docs/IDEAS.md (if it exists) is for information preservation of ideas that come up but can't be fully fleshed out at the time they were thought of. It is mutable, and we should delete IDEAS which don't need further exploration or memory retention. 
  - LLM's should always adhere to decisions rules documented in the docs folder ".md" files. 
+ - The primary SUN product direction is the dockerized prompt-driven recommendation tool on localhost:3020; legacy smoke runners are secondary workflows.
  - Backwards compatibility is not required when implementing or changing features.
  - Always update CHANGELOG.md, all md files located in "docs" with the latest information before making a commit.
  - Always commit and push the current branch to github with a detailed commit message after EVERY task! 
@@ -14,4 +15,4 @@
 
  - If a prompt or plan deviates from software development best practices you must call it out and provide a human the chance to confirm that we indeed do want to deviate from accepted best practices. 
 
-Last Updated: 2026-03-18
+Last Updated: 2026-04-09

@@ -1,3 +1,8 @@
+product_direction:
+  primary: "dockerized_prompt_driven_recommendation_tool"
+  host: "http://localhost:3020"
+  output: "one_recommendation_with_reasoning_screenshots_and_codex_markdown"
+
 personas:
   - name: "High Quality Builder"
     behavior:
@@ -21,13 +26,18 @@ personas:
       abuse_probability: 0.4
 
 canonical_journeys:
+  - name: "prompt_to_review_recommendation"
+    goal: "Capture one approved browser-evaluation run and publish a review page with a single recommendation."
+
+secondary_journeys:
   - name: "existing_token_claim"
-    goal: "Verify an existing identity can claim and save an invite through the real UI."
+    goal: "Legacy Chirpper smoke path for an existing identity claiming and saving an invite through the real UI."
   - name: "new_visitor_invite_claim"
-    goal: "Verify a first-time visitor can create and persist identity from an invite."
+    goal: "Legacy Chirpper smoke path for a first-time visitor creating and persisting identity from an invite."
   - name: "multi_user_lineage_smoke"
-    goal: "Verify a three-identity A -> B -> C lineage plus post, comment, and reaction evidence."
+    goal: "Legacy Chirpper smoke path for a three-identity A -> B -> C lineage plus post, comment, and reaction evidence."
 
 testing_boundary:
+  - "The SUN MVP is recommendation-first; it should stop after collecting enough evidence for one concrete next-step recommendation."
   - "Do not modify Chirpper merely to make a SUN test pass."
   - "If a SUN run exposes a Chirpper blocker, record it in artifacts first and treat any Chirpper change as a separate improvement task."
