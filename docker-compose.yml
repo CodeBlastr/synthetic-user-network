@@ -4,8 +4,9 @@ services:
       context: .
     container_name: sun-mvp
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-4-6}
+      CLAUDE_MAX_ATTEMPTS: ${CLAUDE_MAX_ATTEMPTS:-2}
       PORT: ${PORT:-3020}
       HEADLESS: ${HEADLESS:-true}
       SUN_ALLOWED_HOSTS: ${SUN_ALLOWED_HOSTS:-chirpper.com,www.chirpper.com,localhost,127.0.0.1}

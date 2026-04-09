@@ -34,16 +34,16 @@ The review page is the main product output. It is intended to be copied into Cod
 
 Primary environment variables:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
-- `OPENAI_MAX_ATTEMPTS`
-- `PORT` with a default of `3020`
-- `SUN_ALLOWED_HOSTS`
-- `SUN_MAX_EXECUTION_STEPS`
-- `SUN_TIMEOUT_MS`
-- `HEADLESS`
+- `CLAUDE_API_KEY` — Anthropic API key (required)
+- `CLAUDE_MODEL` — defaults to `claude-sonnet-4-6`
+- `CLAUDE_MAX_ATTEMPTS` — retry attempts for rate limits or overload, defaults to `2`
+- `PORT` — defaults to `3020`
+- `SUN_ALLOWED_HOSTS` — comma-separated list of allowed navigation hosts
+- `SUN_MAX_EXECUTION_STEPS` — maximum browser steps per run, defaults to `8`
+- `SUN_TIMEOUT_MS` — per-action timeout in milliseconds, defaults to `15000`
+- `HEADLESS` — run Playwright headlessly, defaults to `true`
 
-When the MVP calls OpenAI, it now surfaces the provider error message directly into the SUN UI. Transient `429` responses are retried once by default, while likely quota or billing exhaustion is shown clearly so the operator can correct the API setup instead of seeing a generic failure.
+When the MVP calls Claude, it surfaces provider error messages directly into the SUN UI. Transient `429` (rate limit) and `529` (overload) responses are retried once by default.
 
 The Docker path is the preferred way to run the MVP. The host command remains available for local development.
 
@@ -57,3 +57,5 @@ The Chirpper smoke runners in `src/runners/` remain in the repo for secondary va
 - `npm run smoke:multi-user-lineage`
 
 Those flows are still useful for diagnosing Chirpper behavior, but they are not the main SUN product direction.
+
+Last Updated: 2026-04-09

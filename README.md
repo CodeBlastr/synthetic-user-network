@@ -4,7 +4,7 @@ SUN is a dockerized, prompt-driven recommendation tool for browser evaluation on
 
 You enter a prompt describing the browser test you want reviewed. SUN then:
 
-1. Creates an AI-backed execution plan.
+1. Creates an AI-backed execution plan (powered by Claude).
 2. Waits for you to approve the plan.
 3. Runs a Playwright evidence capture.
 4. Streams screenshot previews and execution events while the run is active.
@@ -28,13 +28,15 @@ npm run mvp
 
 Required environment:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL` or the default `gpt-5-mini`
-- `OPENAI_MAX_ATTEMPTS` or the default `2`
-- `PORT` or the default `3020`
+- `CLAUDE_API_KEY` — your Anthropic API key
+- `CLAUDE_MODEL` — defaults to `claude-sonnet-4-6`
+- `CLAUDE_MAX_ATTEMPTS` — defaults to `2`
+- `PORT` — defaults to `3020`
+
+Copy `.env.example` to `.env` and fill in your `CLAUDE_API_KEY` before starting.
 
 The MVP stores run artifacts under `artifacts/runs/` and exposes the review page from the same server.
-If OpenAI rejects a request, SUN now surfaces the provider message directly so quota and rate-limit problems are easier to diagnose from the browser UI.
+If Claude rejects a request, SUN surfaces the provider message directly so rate-limit and auth problems are easy to diagnose from the browser UI.
 
 ## Legacy Smoke Runs
 

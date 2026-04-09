@@ -6,48 +6,61 @@ import type {
   ScreenshotArtifact
 } from "./types.js";
 
-interface ResponseInputPartText {
+// Anthropic Messages API content types
+interface ClaudeTextContent {
+  type: "text";
+  text: string;
+}
+
+interface ClaudeImageContent {
+  type: "image";
+  source: {
+    type: "base64";
+    media_type: "image/png" | "image/jpeg" | "image/gif" | "image/webp";
+    data: string;
+  };
+}
+
+type ClaudeContent = ClaudeTextContent | ClaudeImageContent;
+
+interface ClaudeApiResponse {
+  content: Array<{ type: string; text?: string }>;
+  stop_reason: string;
+}
+
+interface ClaudeErrorPayload {
+  type?: string;
+  error?: {
+    type?: string;
+    message?: string;
+  };
+}
+
+// Internal input types used to build requests
+interface InputPartText {
   type: "input_text";
   text: string;
 }
 
-interface ResponseInputPartImage {
+interface InputPartImage {
   type: "input_image";
-  image_url: string;
+  image_url: string; // data URL: "data:image/png;base64,..."
 }
 
-type ResponseInputPart = ResponseInputPartText | ResponseInputPartImage;
-
-interface ResponsesApiResult {
-  output_text?: string;
-  output?: Array<{
-    content?: Array<{
-      type?: string;
-      text?: string;
-    }>;
-  }>;
-}
-
-interface OpenAiErrorPayload {
-  error?: {
-    message?: string;
-    type?: string;
-    code?: string;
-  };
-}
+type InputPart = InputPartText | InputPartImage;
 
 export class SunAiService {
   private readonly apiKey: string;
   private readonly model: string;
 
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY ?? "";
-    this.model = process.env.OPENAI_MODEL ?? "gpt-5-mini";
+    this.apiKey = process.env.CLAUDE_API_KEY ?? "";
+    this.model = process.env.CLAUDE_MODEL ?? "claude-sonnet-4-6";
   }
 
   ensureConfigured(): void {
     if (!this.apiKey) {
-      throw new Error("OPENAI_API_KEY is required for the SUN MVP planner and reviewer.");
+      throw new Error("CLAUDE_API_KEY is required for the SUN MVP planner and reviewer.");
     }
   }
 
@@ -276,42 +289,43 @@ export class SunAiService {
     };
   }
 
-  private async callModel(content: ResponseInputPart[]): Promise<string> {
+  private async callModel(parts: InputPart[]): Promise<string> {
     this.ensureConfigured();
-    const maxAttempts = Math.max(1, Number(process.env.OPENAI_MAX_ATTEMPTS ?? "2"));
+    const maxAttempts = Math.max(1, Number(process.env.CLAUDE_MAX_ATTEMPTS ?? "2"));
+    const claudeContent = toClaudeContent(parts);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      const response = await fetch("https://api.openai.com/v1/responses", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`
+          "x-api-key": this.apiKey,
+          "anthropic-version": "2023-06-01"
         },
         body: JSON.stringify({
           model: this.model,
-          input: [
-            {
-              role: "user",
-              content
-            }
-          ]
+          max_tokens: 4096,
+          messages: [{ role: "user", content: claudeContent }]
         })
       });
 
       if (response.ok) {
-        const payload = (await response.json()) as ResponsesApiResult;
-        const outputText = payload.output_text ?? extractTextFromOutput(payload.output ?? []);
-        if (!outputText) {
-          throw new Error("OpenAI response did not include any output text.");
+        const payload = (await response.json()) as ClaudeApiResponse;
+        const text = payload.content
+          .filter((c) => c.type === "text")
+          .map((c) => c.text ?? "")
+          .join("\n")
+          .trim();
+        if (!text) {
+          throw new Error("Claude response did not include any text content.");
         }
-        return outputText;
+        return text;
       }
 
-      const errorDetails = await readOpenAiError(response);
+      const errorDetails = await readClaudeError(response);
+      // Retry on rate limit (429) or overload (529)
       const shouldRetry =
-        response.status === 429 &&
-        attempt < maxAttempts &&
-        isRetryableRateLimit(errorDetails);
+        (response.status === 429 || response.status === 529) && attempt < maxAttempts;
 
       if (shouldRetry) {
         const retryAfterMs = getRetryDelayMs(response, attempt);
@@ -319,24 +333,29 @@ export class SunAiService {
         continue;
       }
 
-      throw new Error(buildOpenAiErrorMessage(response.status, errorDetails, response));
+      throw new Error(buildClaudeErrorMessage(response.status, errorDetails));
     }
 
-    throw new Error("OpenAI request exhausted all retry attempts.");
+    throw new Error("Claude request exhausted all retry attempts.");
   }
 }
 
-function extractTextFromOutput(
-  output: ResponsesApiResult["output"]
-): string {
-  if (!output) {
-    return "";
-  }
-  return output
-    .flatMap((item) => item.content ?? [])
-    .map((content) => content.text ?? "")
-    .join("\n")
-    .trim();
+function toClaudeContent(parts: InputPart[]): ClaudeContent[] {
+  return parts.map((part) => {
+    if (part.type === "input_text") {
+      return { type: "text" as const, text: part.text };
+    }
+    // Parse data URL: "data:image/png;base64,<data>"
+    const match = part.image_url.match(/^data:(image\/[a-z]+);base64,(.+)$/);
+    if (!match) {
+      return { type: "text" as const, text: "[image could not be decoded]" };
+    }
+    const mediaType = match[1] as "image/png" | "image/jpeg" | "image/gif" | "image/webp";
+    return {
+      type: "image" as const,
+      source: { type: "base64" as const, media_type: mediaType, data: match[2] }
+    };
+  });
 }
 
 function parseJsonObject(value: string): unknown {
@@ -362,45 +381,44 @@ function isActionKind(value: unknown): value is ActionDecision["action"]["kind"]
   );
 }
 
-async function readOpenAiError(response: Response): Promise<{
+async function readClaudeError(response: Response): Promise<{
   message: string | null;
   type: string | null;
-  code: string | null;
 }> {
   const rawText = await response.text();
   if (!rawText.trim()) {
-    return {
-      message: null,
-      type: null,
-      code: null
-    };
+    return { message: null, type: null };
   }
-
   try {
-    const payload = JSON.parse(rawText) as OpenAiErrorPayload;
+    const payload = JSON.parse(rawText) as ClaudeErrorPayload;
     return {
       message: payload.error?.message ?? rawText.trim(),
-      type: payload.error?.type ?? null,
-      code: payload.error?.code ?? null
+      type: payload.error?.type ?? null
     };
   } catch {
-    return {
-      message: rawText.trim(),
-      type: null,
-      code: null
-    };
+    return { message: rawText.trim(), type: null };
   }
 }
 
-function isRetryableRateLimit(error: {
-  type: string | null;
-  code: string | null;
-}): boolean {
-  return !(
-    error.type === "insufficient_quota" ||
-    error.code === "insufficient_quota" ||
-    error.code === "billing_hard_limit_reached"
-  );
+function buildClaudeErrorMessage(
+  status: number,
+  error: { message: string | null; type: string | null }
+): string {
+  const parts = [`Claude request failed with status ${status}`];
+  if (error.message) {
+    parts.push(error.message);
+  }
+  if (error.type) {
+    parts.push(`type=${error.type}`);
+  }
+  if (status === 401) {
+    parts.push("Check that CLAUDE_API_KEY is valid.");
+  } else if (status === 429) {
+    parts.push("SUN retried; if this persists, wait and try again.");
+  } else if (status === 529) {
+    parts.push("Claude API is temporarily overloaded. Please try again shortly.");
+  }
+  return `${parts.join(". ")}.`;
 }
 
 function getRetryDelayMs(response: Response, attempt: number): number {
@@ -409,48 +427,6 @@ function getRetryDelayMs(response: Response, attempt: number): number {
     return retryAfterSeconds * 1000;
   }
   return 1000 * attempt;
-}
-
-function buildOpenAiErrorMessage(
-  status: number,
-  error: {
-    message: string | null;
-    type: string | null;
-    code: string | null;
-  },
-  response: Response
-): string {
-  const parts = [`OpenAI request failed with status ${status}`];
-
-  if (error.message) {
-    parts.push(error.message);
-  }
-
-  if (error.code) {
-    parts.push(`code=${error.code}`);
-  } else if (error.type) {
-    parts.push(`type=${error.type}`);
-  }
-
-  if (
-    status === 429 &&
-    (error.type === "insufficient_quota" ||
-      error.code === "insufficient_quota" ||
-      error.code === "billing_hard_limit_reached")
-  ) {
-    parts.push(
-      "The API project behind OPENAI_API_KEY appears to be out of quota or billing capacity."
-    );
-  } else if (status === 429) {
-    parts.push("SUN retried once; if this persists, wait and try again.");
-  }
-
-  const requestId = response.headers.get("x-request-id");
-  if (requestId) {
-    parts.push(`request_id=${requestId}`);
-  }
-
-  return `${parts.join(". ")}.`;
 }
 
 async function sleep(ms: number): Promise<void> {
