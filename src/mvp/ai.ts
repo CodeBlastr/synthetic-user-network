@@ -225,11 +225,13 @@ export class SunAiService {
         type: "input_text",
         text: [
           "You are SUN's recommendation analyst.",
-          "Return JSON only.",
+          "Return JSON only — no prose before or after the JSON object.",
           "Produce exactly one product recommendation based on the captured evidence.",
           "The recommendation must be concrete enough for a product engineer to implement next.",
           "The recommendation must explain why it improves the user's stated goal.",
-          "The codex prompt markdown must be copy-pasteable and implementation-oriented.",
+          "The codexPromptMarkdown value must be a single JSON string.",
+          "CRITICAL JSON RULES: All string values must use \\n for line breaks — no literal newlines inside JSON strings.",
+          "Do not use markdown code fences (triple backticks) anywhere in the JSON values.",
           "JSON shape:",
           "{",
           '  "recommendationTitle": string,',
@@ -360,14 +362,54 @@ function toClaudeContent(parts: InputPart[]): ClaudeContent[] {
 
 function parseJsonObject(value: string): unknown {
   const trimmed = value.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidate = fenced?.[1] ?? trimmed;
+  // Greedy match so nested backticks inside string values don't truncate early
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*)```\s*$/i);
+  const candidate = (fenced ? fenced[1] : trimmed).trim();
   const firstBrace = candidate.indexOf("{");
   const lastBrace = candidate.lastIndexOf("}");
   if (firstBrace === -1 || lastBrace === -1) {
     throw new Error("Model output did not contain a JSON object.");
   }
-  return JSON.parse(candidate.slice(firstBrace, lastBrace + 1));
+  const json = candidate.slice(firstBrace, lastBrace + 1);
+  try {
+    return JSON.parse(json);
+  } catch {
+    // Retry after escaping any literal control characters inside JSON strings
+    return JSON.parse(sanitizeJsonControlChars(json));
+  }
+}
+
+// Scan character-by-character and escape literal newlines/tabs inside JSON string values.
+// This handles the common case where a model writes unescaped newlines inside a quoted string.
+function sanitizeJsonControlChars(raw: string): string {
+  let inString = false;
+  let escaped = false;
+  let result = "";
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (escaped) {
+      result += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      result += ch;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      result += ch;
+      continue;
+    }
+    if (inString) {
+      if (ch === "\n") { result += "\\n"; continue; }
+      if (ch === "\r") { result += "\\r"; continue; }
+      if (ch === "\t") { result += "\\t"; continue; }
+    }
+    result += ch;
+  }
+  return result;
 }
 
 function isActionKind(value: unknown): value is ActionDecision["action"]["kind"] {
