@@ -15,7 +15,7 @@ export function renderHomePage(): string {
         --accent-soft: rgba(185, 78, 36, 0.12);
         --line: rgba(29, 26, 22, 0.13);
         --bg: #f2ebe0;
-        --card: rgba(255, 251, 244, 0.92);
+        --card: rgba(255, 251, 244, 0.96);
         --font: "Avenir Next", "Segoe UI", sans-serif;
       }
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,50 +25,91 @@ export function renderHomePage(): string {
         font-family: var(--font);
         font-size: 14px;
         line-height: 1.6;
-        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
       }
+
       /* ── top bar ── */
       .topbar {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 16px;
+        gap: 10px;
+        padding: 8px 14px;
         border-bottom: 1px solid var(--line);
         background: var(--card);
         flex-shrink: 0;
+        min-height: 52px;
       }
       .topbar-logo {
         font-weight: 800;
         font-size: 13px;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
         color: var(--accent);
+        flex-shrink: 0;
       }
-      .topbar-sep { color: var(--line); }
-      #planStatus {
+      .topbar-sep {
+        color: var(--line);
+        flex-shrink: 0;
+        font-size: 18px;
+        line-height: 1;
+      }
+      .topbar-label {
         color: var(--muted);
         font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
+      #promptInput {
+        flex: 1;
+        min-width: 0;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: white;
+        padding: 0 12px;
+        font: 500 13px/1 var(--font);
+        color: var(--ink);
+        resize: none;
+        overflow: hidden;
+      }
+      #promptInput:focus { outline: 2px solid var(--accent); border-color: transparent; }
+      #planButton {
+        appearance: none;
+        border: 0;
+        flex-shrink: 0;
+        border-radius: 999px;
+        padding: 8px 18px;
+        background: var(--ink);
+        color: white;
+        font: 700 13px/1 var(--font);
+        cursor: pointer;
+        transition: opacity 150ms;
+        white-space: nowrap;
+      }
+      #planButton:disabled { opacity: 0.45; cursor: not-allowed; }
+      #planButton:not(:disabled):hover { opacity: 0.82; }
+
       /* ── 3-column layout ── */
       .columns {
         flex: 1;
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 0;
         overflow: hidden;
+        min-height: 0;
       }
       .col {
         border-right: 1px solid var(--line);
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0;
       }
       .col:last-child { border-right: none; }
       .col-header {
-        padding: 12px 16px;
+        padding: 10px 14px;
         border-bottom: 1px solid var(--line);
         display: flex;
         align-items: center;
@@ -77,18 +118,18 @@ export function renderHomePage(): string {
         background: var(--card);
       }
       .col-header h2 {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.13em;
         text-transform: uppercase;
         color: var(--muted);
       }
       .pill {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         border-radius: 999px;
-        padding: 4px 10px;
+        padding: 3px 9px;
         background: var(--accent-soft);
         color: var(--accent);
         font-size: 11px;
@@ -97,43 +138,15 @@ export function renderHomePage(): string {
       .col-body {
         flex: 1;
         overflow-y: auto;
-        padding: 14px 16px;
+        padding: 14px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
-      }
-      /* ── plan column ── */
-      textarea {
-        width: 100%;
-        min-height: 120px;
-        resize: vertical;
-        border-radius: 10px;
-        border: 1px solid var(--line);
-        background: white;
-        padding: 12px;
-        font: 500 13px/1.6 "American Typewriter", "Courier New", monospace;
-        color: var(--ink);
-      }
-      .btn-row {
-        display: flex;
-        align-items: center;
         gap: 10px;
-        flex-wrap: wrap;
+        min-height: 0;
       }
-      button {
-        appearance: none;
-        border: 0;
-        border-radius: 999px;
-        padding: 9px 18px;
-        font: 700 13px/1 var(--font);
-        cursor: pointer;
-        transition: opacity 150ms;
-      }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      .btn-primary { background: var(--ink); color: white; }
-      .btn-execute { background: var(--accent); color: white; width: 100%; padding: 12px; font-size: 14px; border-radius: 10px; }
+
       /* ── plan display ── */
-      .plan-meta { color: var(--muted); font-size: 13px; }
+      .plan-meta { color: var(--muted); font-size: 13px; line-height: 1.5; }
       .plan-meta b { color: var(--ink); }
       .url-pill {
         display: inline-block;
@@ -144,7 +157,6 @@ export function renderHomePage(): string {
         font-size: 12px;
         font-weight: 600;
         word-break: break-all;
-        margin-bottom: 4px;
       }
       .steps { display: grid; gap: 8px; }
       .step {
@@ -153,8 +165,48 @@ export function renderHomePage(): string {
         border: 1px solid var(--line);
         background: white;
       }
-      .step strong { display: block; margin-bottom: 4px; font-size: 13px; }
-      .step .meta { font-size: 12px; color: var(--muted); }
+      .step strong { display: block; margin-bottom: 3px; font-size: 13px; }
+      .step .meta { font-size: 12px; color: var(--muted); line-height: 1.5; }
+      .btn-execute {
+        appearance: none;
+        border: 0;
+        border-radius: 10px;
+        padding: 13px;
+        background: var(--accent);
+        color: white;
+        font: 700 14px/1 var(--font);
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 150ms;
+      }
+      .btn-execute:hover { opacity: 0.85; }
+
+      /* ── loading animation ── */
+      .loading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .loading-dots {
+        display: flex;
+        gap: 4px;
+      }
+      .loading-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: bounce 1.2s infinite ease-in-out;
+      }
+      .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+      .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+        40% { transform: scale(1); opacity: 1; }
+      }
+
       /* ── stream column ── */
       .events { display: flex; flex-direction: column; gap: 8px; }
       .event {
@@ -165,6 +217,7 @@ export function renderHomePage(): string {
       }
       .event strong { display: block; font-size: 13px; margin-bottom: 2px; }
       .event .ts { font-size: 11px; color: var(--muted); }
+
       /* ── visuals column ── */
       .preview-grid {
         display: grid;
@@ -189,7 +242,9 @@ export function renderHomePage(): string {
         padding: 7px 9px;
         font-size: 11px;
         color: var(--muted);
+        line-height: 1.4;
       }
+
       /* ── review link ── */
       .review-ready {
         display: none;
@@ -198,30 +253,33 @@ export function renderHomePage(): string {
         border: 1px solid var(--accent);
         background: var(--accent-soft);
       }
-      .review-ready strong { display: block; color: var(--accent); margin-bottom: 6px; }
+      .review-ready strong { display: block; color: var(--accent); margin-bottom: 4px; font-size: 13px; }
+      .review-ready p { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
       .review-ready a {
         display: inline-block;
-        margin-top: 8px;
         padding: 9px 18px;
         background: var(--accent);
         color: white;
         border-radius: 999px;
-        font-weight: 700;
-        font-size: 13px;
+        font: 700 13px/1 var(--font);
         text-decoration: none;
+        transition: opacity 150ms;
       }
+      .review-ready a:hover { opacity: 0.85; }
+
       /* ── empty states ── */
       .empty { color: var(--muted); font-size: 13px; }
-      /* ── loader dot ── */
+
+      /* ── live dot ── */
       .dot {
-        width: 8px; height: 8px;
+        width: 7px; height: 7px;
         border-radius: 50%;
         background: var(--accent);
-        animation: pulse 1s infinite ease-in-out;
+        animation: pulse 1.4s infinite ease-in-out;
         display: inline-block;
       }
       @keyframes pulse {
-        0%, 100% { opacity: 0.4; transform: scale(0.85); }
+        0%, 100% { opacity: 0.35; transform: scale(0.8); }
         50% { opacity: 1; transform: scale(1); }
       }
     </style>
@@ -229,8 +287,10 @@ export function renderHomePage(): string {
   <body>
     <div class="topbar">
       <span class="topbar-logo">SUN</span>
-      <span class="topbar-sep">·</span>
-      <span id="planStatus">Enter a prompt to begin.</span>
+      <span class="topbar-sep">|</span>
+      <span class="topbar-label">Write a Testing Plan to Begin</span>
+      <textarea id="promptInput" rows="1" spellcheck="false">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
+      <button id="planButton">Generate Plan</button>
     </div>
 
     <div class="columns">
@@ -242,13 +302,7 @@ export function renderHomePage(): string {
           <span class="pill">localhost:3020</span>
         </div>
         <div class="col-body">
-          <textarea id="promptInput" spellcheck="false">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
-          <div class="btn-row">
-            <button id="planButton" class="btn-primary">Generate Plan</button>
-          </div>
-          <div id="planContainer" class="empty">
-            The plan will appear here once generated.
-          </div>
+          <div id="planContainer" class="empty">Generate a plan above to begin.</div>
         </div>
       </div>
 
@@ -256,7 +310,7 @@ export function renderHomePage(): string {
       <div class="col">
         <div class="col-header">
           <h2>Test Execution</h2>
-          <div class="pill"><span class="dot"></span> Live</div>
+          <div class="pill"><span class="dot"></span>&nbsp;Live</div>
         </div>
         <div class="col-body">
           <div id="eventFeed" class="events">
@@ -281,130 +335,128 @@ export function renderHomePage(): string {
 
     </div>
 
-    <script type="module">
-      const promptInput = document.getElementById("promptInput");
-      const planButton = document.getElementById("planButton");
-      const planStatus = document.getElementById("planStatus");
-      const planContainer = document.getElementById("planContainer");
-      const eventFeed = document.getElementById("eventFeed");
-      const previewGrid = document.getElementById("previewGrid");
-      const reviewReady = document.getElementById("reviewReady");
+    <script>
+      var promptInput = document.getElementById("promptInput");
+      var planButton = document.getElementById("planButton");
+      var planContainer = document.getElementById("planContainer");
+      var eventFeed = document.getElementById("eventFeed");
+      var previewGrid = document.getElementById("previewGrid");
+      var reviewReady = document.getElementById("reviewReady");
+      var eventSource = null;
 
-      let eventSource = null;
+      // Auto-resize the topbar textarea as user types
+      promptInput.addEventListener("input", function() {
+        promptInput.style.height = "34px";
+        promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + "px";
+      });
 
-      planButton.addEventListener("click", async () => {
+      planButton.addEventListener("click", function() {
+        var prompt = promptInput.value.trim();
+        if (!prompt) return;
         planButton.disabled = true;
-        planStatus.textContent = "Generating plan...";
         reviewReady.style.display = "none";
         reviewReady.innerHTML = "";
-        eventFeed.innerHTML = ‘<div class="empty">Waiting for plan...</div>’;
+        eventFeed.innerHTML = ‘<div class="empty">Waiting for execution...</div>’;
         previewGrid.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
-        planContainer.innerHTML = ‘<div class="empty">Thinking...</div>’;
+        planContainer.innerHTML = ‘<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div>Generating plan...</div>’;
 
-        try {
-          const response = await fetch("/api/plans", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: promptInput.value })
+        fetch("/api/plans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: prompt })
+        })
+          .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+          .then(function(result) {
+            if (!result.ok) throw new Error(result.data.error || "Unable to generate plan.");
+            renderPlan(result.data.run);
+          })
+          .catch(function(err) {
+            planContainer.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
+          })
+          .finally(function() {
+            planButton.disabled = false;
           });
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || "Unable to generate plan.");
-          renderPlan(payload.run);
-          planStatus.textContent = "Plan ready — review and execute.";
-        } catch (err) {
-          planContainer.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
-          planStatus.textContent = "Plan failed.";
-        } finally {
-          planButton.disabled = false;
-        }
       });
 
       function renderPlan(run) {
-        const plan = run.plan;
-        const steps = plan.steps.map((s) => \`
-          <div class="step">
-            <strong>\${escapeHtml(s.title)}</strong>
-            <div class="meta">\${escapeHtml(s.purpose)}</div>
-            <div class="meta" style="margin-top:4px"><b>Evidence:</b> \${escapeHtml(s.evidenceToCollect)}</div>
-          </div>
-        \`).join("");
+        var plan = run.plan;
+        var steps = plan.steps.map(function(s) {
+          return ‘<div class="step"><strong>’ + escapeHtml(s.title) + ‘</strong>’ +
+            ‘<div class="meta">’ + escapeHtml(s.purpose) + ‘</div>’ +
+            ‘<div class="meta" style="margin-top:4px"><b>Evidence:</b> ‘ + escapeHtml(s.evidenceToCollect) + ‘</div></div>’;
+        }).join("");
 
-        planContainer.innerHTML = \`
-          <div class="url-pill">\${escapeHtml(plan.startingUrl)}</div>
-          <div class="plan-meta"><b>Goal:</b> \${escapeHtml(plan.goal)}</div>
-          <div class="plan-meta"><b>Focus:</b> \${plan.focusAreas.map(escapeHtml).join(" · ")}</div>
-          <div class="plan-meta"><b>Constraints:</b> \${plan.constraints.map(escapeHtml).join(" · ")}</div>
-          <div class="plan-meta"><b>Done when:</b> \${escapeHtml(plan.completionSignal)}</div>
-          <div class="steps">\${steps}</div>
-          <button id="executeButton" class="btn-execute">Execute? Yes.</button>
-        \`;
-        document.getElementById("executeButton").addEventListener("click", () => executeRun(run.id));
+        planContainer.innerHTML =
+          ‘<div class="url-pill">’ + escapeHtml(plan.startingUrl) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Goal:</b> ‘ + escapeHtml(plan.goal) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Focus:</b> ‘ + plan.focusAreas.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Constraints:</b> ‘ + plan.constraints.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Done when:</b> ‘ + escapeHtml(plan.completionSignal) + ‘</div>’ +
+          ‘<div class="steps">’ + steps + ‘</div>’ +
+          ‘<button class="btn-execute" id="executeButton">Execute? Yes.</button>’;
+
+        document.getElementById("executeButton").addEventListener("click", function() {
+          executeRun(run.id);
+        });
       }
 
-      async function executeRun(runId) {
-        planStatus.textContent = "Running...";
+      function executeRun(runId) {
         connectEvents(runId);
-        const response = await fetch(\`/api/runs/\${runId}/execute\`, { method: "POST" });
-        const payload = await response.json();
-        if (!response.ok) {
-          planStatus.textContent = "Failed to start.";
-          eventFeed.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(payload.error || "Unknown error.") + ‘</div></div>’;
-        }
+        fetch("/api/runs/" + runId + "/execute", { method: "POST" })
+          .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+          .then(function(result) {
+            if (!result.ok) {
+              eventFeed.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(result.data.error || "Unknown error.") + ‘</div></div>’;
+            }
+          });
       }
 
       function connectEvents(runId) {
         if (eventSource) eventSource.close();
         eventFeed.innerHTML = "";
         previewGrid.innerHTML = "";
-        eventSource = new EventSource(\`/api/runs/\${runId}/events\`);
-        eventSource.onmessage = (e) => {
-          const payload = JSON.parse(e.data);
+        eventSource = new EventSource("/api/runs/" + runId + "/events");
+        eventSource.onmessage = function(e) {
+          var payload = JSON.parse(e.data);
           prependEvent(payload);
-          if (payload.type === "screenshot_captured" && payload.data?.screenshot) {
+          if (payload.type === "screenshot_captured" && payload.data && payload.data.screenshot) {
             prependScreenshot(payload.data.screenshot);
           }
-          if (payload.type === "run_completed" && payload.data?.reviewPath) {
+          if (payload.type === "run_completed" && payload.data && payload.data.reviewPath) {
             reviewReady.style.display = "block";
-            reviewReady.innerHTML = \`
-              <strong>Analysis ready</strong>
-              <div>SUN finished the run and assembled the recommendation.</div>
-              <a href="\${payload.data.reviewPath}">Open review &rarr;</a>
-            \`;
-            planStatus.textContent = "Done.";
+            reviewReady.innerHTML =
+              ‘<strong>Analysis ready</strong>’ +
+              ‘<p>SUN finished the run and assembled the recommendation.</p>’ +
+              ‘<a href="’ + payload.data.reviewPath + ‘">Open review &#8594;</a>’;
             eventSource.close();
           }
           if (payload.type === "run_failed") {
-            planStatus.textContent = "Run failed.";
             eventSource.close();
           }
         };
       }
 
       function prependEvent(event) {
-        const el = document.createElement("div");
+        var el = document.createElement("div");
         el.className = "event";
-        el.innerHTML = \`
-          <strong>\${escapeHtml(event.message)}</strong>
-          <div class="ts">\${new Date(event.createdAt).toLocaleTimeString()}</div>
-        \`;
+        el.innerHTML = "<strong>" + escapeHtml(event.message) + "</strong>" +
+          ‘<div class="ts">’ + new Date(event.createdAt).toLocaleTimeString() + "</div>";
         eventFeed.prepend(el);
       }
 
       function prependScreenshot(shot) {
-        previewGrid.querySelectorAll(".empty").forEach(n => n.remove());
-        const el = document.createElement("div");
+        previewGrid.querySelectorAll(".empty").forEach(function(n) { n.remove(); });
+        var el = document.createElement("div");
         el.className = "preview";
-        el.innerHTML = \`
-          <img src="/artifacts/\${encodeURI(shot.relativePath)}" alt="\${escapeHtml(shot.label)}" />
-          <span>\${escapeHtml(shot.label)}</span>
-        \`;
+        el.innerHTML = ‘<img src="/artifacts/’ + encodeURI(shot.relativePath) + ‘" alt="’ + escapeHtml(shot.label) + ‘" />’ +
+          ‘<span>’ + escapeHtml(shot.label) + ‘</span>’;
         previewGrid.prepend(el);
       }
 
       function escapeHtml(v) {
         return String(v)
-          .replaceAll("&","&amp;").replaceAll("<","&lt;")
-          .replaceAll(">","&gt;").replaceAll(‘"’,"&quot;").replaceAll("’","&#39;");
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/’/g,"&#39;");
       }
     </script>
   </body>
