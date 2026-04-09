@@ -28,6 +28,14 @@ interface ResponsesApiResult {
   }>;
 }
 
+interface OpenAiErrorPayload {
+  error?: {
+    message?: string;
+    type?: string;
+    code?: string;
+  };
+}
+
 export class SunAiService {
   private readonly apiKey: string;
   private readonly model: string;
@@ -270,33 +278,51 @@ export class SunAiService {
 
   private async callModel(content: ResponseInputPart[]): Promise<string> {
     this.ensureConfigured();
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`
-      },
-      body: JSON.stringify({
-        model: this.model,
-        input: [
-          {
-            role: "user",
-            content
-          }
-        ]
-      })
-    });
+    const maxAttempts = Math.max(1, Number(process.env.OPENAI_MAX_ATTEMPTS ?? "2"));
 
-    if (!response.ok) {
-      throw new Error(`OpenAI request failed with status ${response.status}.`);
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          input: [
+            {
+              role: "user",
+              content
+            }
+          ]
+        })
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as ResponsesApiResult;
+        const outputText = payload.output_text ?? extractTextFromOutput(payload.output ?? []);
+        if (!outputText) {
+          throw new Error("OpenAI response did not include any output text.");
+        }
+        return outputText;
+      }
+
+      const errorDetails = await readOpenAiError(response);
+      const shouldRetry =
+        response.status === 429 &&
+        attempt < maxAttempts &&
+        isRetryableRateLimit(errorDetails);
+
+      if (shouldRetry) {
+        const retryAfterMs = getRetryDelayMs(response, attempt);
+        await sleep(retryAfterMs);
+        continue;
+      }
+
+      throw new Error(buildOpenAiErrorMessage(response.status, errorDetails, response));
     }
 
-    const payload = (await response.json()) as ResponsesApiResult;
-    const outputText = payload.output_text ?? extractTextFromOutput(payload.output ?? []);
-    if (!outputText) {
-      throw new Error("OpenAI response did not include any output text.");
-    }
-    return outputText;
+    throw new Error("OpenAI request exhausted all retry attempts.");
   }
 }
 
@@ -334,4 +360,99 @@ function isActionKind(value: unknown): value is ActionDecision["action"]["kind"]
     value === "wait" ||
     value === "stop"
   );
+}
+
+async function readOpenAiError(response: Response): Promise<{
+  message: string | null;
+  type: string | null;
+  code: string | null;
+}> {
+  const rawText = await response.text();
+  if (!rawText.trim()) {
+    return {
+      message: null,
+      type: null,
+      code: null
+    };
+  }
+
+  try {
+    const payload = JSON.parse(rawText) as OpenAiErrorPayload;
+    return {
+      message: payload.error?.message ?? rawText.trim(),
+      type: payload.error?.type ?? null,
+      code: payload.error?.code ?? null
+    };
+  } catch {
+    return {
+      message: rawText.trim(),
+      type: null,
+      code: null
+    };
+  }
+}
+
+function isRetryableRateLimit(error: {
+  type: string | null;
+  code: string | null;
+}): boolean {
+  return !(
+    error.type === "insufficient_quota" ||
+    error.code === "insufficient_quota" ||
+    error.code === "billing_hard_limit_reached"
+  );
+}
+
+function getRetryDelayMs(response: Response, attempt: number): number {
+  const retryAfterSeconds = Number(response.headers.get("retry-after") ?? "");
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    return retryAfterSeconds * 1000;
+  }
+  return 1000 * attempt;
+}
+
+function buildOpenAiErrorMessage(
+  status: number,
+  error: {
+    message: string | null;
+    type: string | null;
+    code: string | null;
+  },
+  response: Response
+): string {
+  const parts = [`OpenAI request failed with status ${status}`];
+
+  if (error.message) {
+    parts.push(error.message);
+  }
+
+  if (error.code) {
+    parts.push(`code=${error.code}`);
+  } else if (error.type) {
+    parts.push(`type=${error.type}`);
+  }
+
+  if (
+    status === 429 &&
+    (error.type === "insufficient_quota" ||
+      error.code === "insufficient_quota" ||
+      error.code === "billing_hard_limit_reached")
+  ) {
+    parts.push(
+      "The API project behind OPENAI_API_KEY appears to be out of quota or billing capacity."
+    );
+  } else if (status === 429) {
+    parts.push("SUN retried once; if this persists, wait and try again.");
+  }
+
+  const requestId = response.headers.get("x-request-id");
+  if (requestId) {
+    parts.push(`request_id=${requestId}`);
+  }
+
+  return `${parts.join(". ")}.`;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }

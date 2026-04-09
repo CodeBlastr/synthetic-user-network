@@ -39,5 +39,6 @@ secondary_journeys:
 
 testing_boundary:
   - "The SUN MVP is recommendation-first; it should stop after collecting enough evidence for one concrete next-step recommendation."
+  - "Provider-side planning and analysis failures should surface actionable detail to the operator, especially for quota exhaustion versus temporary throttling."
   - "Do not modify Chirpper merely to make a SUN test pass."
   - "If a SUN run exposes a Chirpper blocker, record it in artifacts first and treat any Chirpper change as a separate improvement task."

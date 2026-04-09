@@ -30,9 +30,11 @@ Required environment:
 
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` or the default `gpt-5-mini`
+- `OPENAI_MAX_ATTEMPTS` or the default `2`
 - `PORT` or the default `3020`
 
 The MVP stores run artifacts under `artifacts/runs/` and exposes the review page from the same server.
+If OpenAI rejects a request, SUN now surfaces the provider message directly so quota and rate-limit problems are easier to diagnose from the browser UI.
 
 ## Legacy Smoke Runs
 

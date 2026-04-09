@@ -36,11 +36,14 @@ Primary environment variables:
 
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+- `OPENAI_MAX_ATTEMPTS`
 - `PORT` with a default of `3020`
 - `SUN_ALLOWED_HOSTS`
 - `SUN_MAX_EXECUTION_STEPS`
 - `SUN_TIMEOUT_MS`
 - `HEADLESS`
+
+When the MVP calls OpenAI, it now surfaces the provider error message directly into the SUN UI. Transient `429` responses are retried once by default, while likely quota or billing exhaustion is shown clearly so the operator can correct the API setup instead of seeing a generic failure.
 
 The Docker path is the preferred way to run the MVP. The host command remains available for local development.
 
