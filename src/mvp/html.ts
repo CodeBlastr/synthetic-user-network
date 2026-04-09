@@ -65,17 +65,20 @@ export function renderHomePage(): string {
       #promptInput {
         flex: 1;
         min-width: 0;
-        height: 34px;
-        border-radius: 8px;
-        border: 1px solid var(--line);
-        background: white;
-        padding: 0 12px;
+        height: 32px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(29, 26, 22, 0.28);
+        border-radius: 0;
+        padding: 0 8px;
         font: 500 13px/1 var(--font);
         color: var(--ink);
         resize: none;
         overflow: hidden;
+        outline: none;
       }
-      #promptInput:focus { outline: 2px solid var(--accent); border-color: transparent; }
+      #promptInput::placeholder { color: var(--muted); }
+      #promptInput:focus { border-bottom-color: var(--accent); }
       #planButton {
         appearance: none;
         border: 0;
@@ -290,7 +293,7 @@ export function renderHomePage(): string {
       <span class="topbar-sep">|</span>
       <span class="topbar-label">Write a Testing Plan to Begin</span>
       <textarea id="promptInput" rows="1" spellcheck="false">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
-      <button id="planButton">Generate Plan</button>
+      <button id="planButton" onclick="sunGeneratePlan()">Generate Plan</button>
     </div>
 
     <div class="columns">
@@ -336,49 +339,53 @@ export function renderHomePage(): string {
     </div>
 
     <script>
-      var promptInput = document.getElementById("promptInput");
-      var planButton = document.getElementById("planButton");
-      var planContainer = document.getElementById("planContainer");
-      var eventFeed = document.getElementById("eventFeed");
-      var previewGrid = document.getElementById("previewGrid");
-      var reviewReady = document.getElementById("reviewReady");
-      var eventSource = null;
+      var _eventSource = null;
 
-      // Auto-resize the topbar textarea as user types
-      promptInput.addEventListener("input", function() {
-        promptInput.style.height = "34px";
-        promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + "px";
-      });
+      function escapeHtml(v) {
+        return String(v)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/’/g,"&#39;");
+      }
 
-      planButton.addEventListener("click", function() {
-        var prompt = promptInput.value.trim();
-        if (!prompt) return;
-        planButton.disabled = true;
-        reviewReady.style.display = "none";
-        reviewReady.innerHTML = "";
-        eventFeed.innerHTML = ‘<div class="empty">Waiting for execution...</div>’;
-        previewGrid.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
-        planContainer.innerHTML = ‘<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div>Generating plan...</div>’;
+      function sunGeneratePlan() {
+        var promptEl = document.getElementById("promptInput");
+        var planBtn = document.getElementById("planButton");
+        var planContainer = document.getElementById("planContainer");
+        var eventFeed = document.getElementById("eventFeed");
+        var previewGrid = document.getElementById("previewGrid");
+        var reviewReady = document.getElementById("reviewReady");
+
+        var prompt = promptEl ? promptEl.value.trim() : "";
+        if (!prompt) {
+          alert("Please enter a test prompt first.");
+          return;
+        }
+
+        if (planBtn) planBtn.disabled = true;
+        if (reviewReady) { reviewReady.style.display = "none"; reviewReady.innerHTML = ""; }
+        if (eventFeed) eventFeed.innerHTML = ‘<div class="empty">Waiting for execution...</div>’;
+        if (previewGrid) previewGrid.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
+        if (planContainer) planContainer.innerHTML = ‘<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div>Generating plan\u2026</div>’;
 
         fetch("/api/plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: prompt })
-        })
-          .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
-          .then(function(result) {
-            if (!result.ok) throw new Error(result.data.error || "Unable to generate plan.");
-            renderPlan(result.data.run);
-          })
-          .catch(function(err) {
-            planContainer.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
-          })
-          .finally(function() {
-            planButton.disabled = false;
+        }).then(function(res) {
+          return res.json().then(function(body) {
+            if (!res.ok) throw new Error(body.error || "Unable to generate plan.");
+            sunRenderPlan(body.run);
           });
-      });
+        }).catch(function(err) {
+          var pc = document.getElementById("planContainer");
+          if (pc) pc.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
+        }).finally(function() {
+          var btn = document.getElementById("planButton");
+          if (btn) btn.disabled = false;
+        });
+      }
 
-      function renderPlan(run) {
+      function sunRenderPlan(run) {
         var plan = run.plan;
         var steps = plan.steps.map(function(s) {
           return ‘<div class="step"><strong>’ + escapeHtml(s.title) + ‘</strong>’ +
@@ -386,77 +393,77 @@ export function renderHomePage(): string {
             ‘<div class="meta" style="margin-top:4px"><b>Evidence:</b> ‘ + escapeHtml(s.evidenceToCollect) + ‘</div></div>’;
         }).join("");
 
-        planContainer.innerHTML =
+        var pc = document.getElementById("planContainer");
+        if (pc) pc.innerHTML =
           ‘<div class="url-pill">’ + escapeHtml(plan.startingUrl) + ‘</div>’ +
           ‘<div class="plan-meta"><b>Goal:</b> ‘ + escapeHtml(plan.goal) + ‘</div>’ +
           ‘<div class="plan-meta"><b>Focus:</b> ‘ + plan.focusAreas.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
           ‘<div class="plan-meta"><b>Constraints:</b> ‘ + plan.constraints.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
           ‘<div class="plan-meta"><b>Done when:</b> ‘ + escapeHtml(plan.completionSignal) + ‘</div>’ +
           ‘<div class="steps">’ + steps + ‘</div>’ +
-          ‘<button class="btn-execute" id="executeButton">Execute? Yes.</button>’;
-
-        document.getElementById("executeButton").addEventListener("click", function() {
-          executeRun(run.id);
-        });
+          ‘<button class="btn-execute" onclick="sunExecuteRun(\’’ + escapeHtml(run.id) + ‘\’)">Execute? Yes.</button>’;
       }
 
-      function executeRun(runId) {
-        connectEvents(runId);
+      function sunExecuteRun(runId) {
+        sunConnectEvents(runId);
         fetch("/api/runs/" + runId + "/execute", { method: "POST" })
-          .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
-          .then(function(result) {
-            if (!result.ok) {
-              eventFeed.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(result.data.error || "Unknown error.") + ‘</div></div>’;
-            }
+          .then(function(res) {
+            return res.json().then(function(body) {
+              if (!res.ok) {
+                var ef = document.getElementById("eventFeed");
+                if (ef) ef.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(body.error || "Unknown error.") + ‘</div></div>’;
+              }
+            });
           });
       }
 
-      function connectEvents(runId) {
-        if (eventSource) eventSource.close();
-        eventFeed.innerHTML = "";
-        previewGrid.innerHTML = "";
-        eventSource = new EventSource("/api/runs/" + runId + "/events");
-        eventSource.onmessage = function(e) {
+      function sunConnectEvents(runId) {
+        if (_eventSource) _eventSource.close();
+        var eventFeed = document.getElementById("eventFeed");
+        var previewGrid = document.getElementById("previewGrid");
+        if (eventFeed) eventFeed.innerHTML = "";
+        if (previewGrid) previewGrid.innerHTML = "";
+        _eventSource = new EventSource("/api/runs/" + runId + "/events");
+        _eventSource.onmessage = function(e) {
           var payload = JSON.parse(e.data);
-          prependEvent(payload);
+          sunPrependEvent(payload);
           if (payload.type === "screenshot_captured" && payload.data && payload.data.screenshot) {
-            prependScreenshot(payload.data.screenshot);
+            sunPrependScreenshot(payload.data.screenshot);
           }
           if (payload.type === "run_completed" && payload.data && payload.data.reviewPath) {
-            reviewReady.style.display = "block";
-            reviewReady.innerHTML =
-              ‘<strong>Analysis ready</strong>’ +
-              ‘<p>SUN finished the run and assembled the recommendation.</p>’ +
-              ‘<a href="’ + payload.data.reviewPath + ‘">Open review &#8594;</a>’;
-            eventSource.close();
+            var rr = document.getElementById("reviewReady");
+            if (rr) {
+              rr.style.display = "block";
+              rr.innerHTML = ‘<strong>Analysis ready</strong><p>SUN finished and assembled the recommendation.</p>’ +
+                ‘<a href="’ + payload.data.reviewPath + ‘">Open review &#8594;</a>’;
+            }
+            _eventSource.close();
           }
           if (payload.type === "run_failed") {
-            eventSource.close();
+            _eventSource.close();
           }
         };
       }
 
-      function prependEvent(event) {
+      function sunPrependEvent(event) {
+        var feed = document.getElementById("eventFeed");
+        if (!feed) return;
         var el = document.createElement("div");
         el.className = "event";
         el.innerHTML = "<strong>" + escapeHtml(event.message) + "</strong>" +
           ‘<div class="ts">’ + new Date(event.createdAt).toLocaleTimeString() + "</div>";
-        eventFeed.prepend(el);
+        feed.prepend(el);
       }
 
-      function prependScreenshot(shot) {
-        previewGrid.querySelectorAll(".empty").forEach(function(n) { n.remove(); });
+      function sunPrependScreenshot(shot) {
+        var grid = document.getElementById("previewGrid");
+        if (!grid) return;
+        grid.querySelectorAll(".empty").forEach(function(n) { n.parentNode.removeChild(n); });
         var el = document.createElement("div");
         el.className = "preview";
         el.innerHTML = ‘<img src="/artifacts/’ + encodeURI(shot.relativePath) + ‘" alt="’ + escapeHtml(shot.label) + ‘" />’ +
           ‘<span>’ + escapeHtml(shot.label) + ‘</span>’;
-        previewGrid.prepend(el);
-      }
-
-      function escapeHtml(v) {
-        return String(v)
-          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-          .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/’/g,"&#39;");
+        grid.prepend(el);
       }
     </script>
   </body>
