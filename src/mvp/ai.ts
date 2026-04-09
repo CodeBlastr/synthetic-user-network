@@ -70,7 +70,9 @@ export class SunAiService {
         type: "input_text",
         text: [
           "You are SUN, a synthetic-user planner.",
-          "Return JSON only.",
+          "Return JSON only — no prose before or after the JSON object.",
+          "CRITICAL JSON RULES: All string values must use \\n for line breaks — no literal newlines inside JSON strings.",
+          "Never use unescaped double-quote characters inside a JSON string value. Use single quotes for any quoted text.",
           "Create a compact execution plan for a human-approved browser evaluation run.",
           "This run is recommendation-first: it should gather enough evidence to make one concrete next-step recommendation, not perform product changes.",
           "Prefer 3 to 6 steps.",
@@ -132,7 +134,9 @@ export class SunAiService {
         type: "input_text",
         text: [
           "You are SUN's browser executor.",
-          "Return JSON only.",
+          "Return JSON only — no prose before or after the JSON object.",
+          "CRITICAL JSON RULES: All string values must use \\n for line breaks — no literal newlines inside JSON strings.",
+          "Never use unescaped double-quote characters inside a JSON string value. Use single quotes for any quoted text.",
           "Choose the next best action for a browser evaluation run.",
           "Do not fabricate hidden state.",
           "Stop as soon as there is enough evidence to make one recommendation.",
@@ -379,34 +383,62 @@ function parseJsonObject(value: string): unknown {
   }
 }
 
-// Scan character-by-character and escape literal newlines/tabs inside JSON string values.
-// This handles the common case where a model writes unescaped newlines inside a quoted string.
+// Scan character-by-character and repair common LLM JSON mistakes:
+// - Literal newlines / carriage returns / tabs inside string values
+// - Unescaped double-quote characters inside string values
+//
+// Strategy: track whether we're inside a JSON string. A `"` that isn't
+// preceded by an odd run of backslashes either opens/closes a string OR
+// is an unescaped interior quote. We detect the latter by checking whether
+// the "closing" quote is followed (ignoring whitespace) by a structural
+// character: , } ] — if not, it was an interior quote and we escape it.
 function sanitizeJsonControlChars(raw: string): string {
   let inString = false;
   let escaped = false;
   let result = "";
+
   for (let i = 0; i < raw.length; i++) {
     const ch = raw[i];
+
     if (escaped) {
       result += ch;
       escaped = false;
       continue;
     }
+
     if (ch === "\\") {
       escaped = true;
       result += ch;
       continue;
     }
+
     if (ch === '"') {
-      inString = !inString;
-      result += ch;
+      if (!inString) {
+        inString = true;
+        result += ch;
+        continue;
+      }
+      // We think this might close the string. Peek ahead past whitespace.
+      let j = i + 1;
+      while (j < raw.length && (raw[j] === " " || raw[j] === "\t")) j++;
+      const next = raw[j] ?? "";
+      // Structural characters that legitimately follow a closing string quote
+      if (",}]:\n\r".includes(next) || j >= raw.length) {
+        inString = false;
+        result += ch;
+      } else {
+        // Interior unescaped quote — escape it
+        result += '\\"';
+      }
       continue;
     }
+
     if (inString) {
       if (ch === "\n") { result += "\\n"; continue; }
       if (ch === "\r") { result += "\\r"; continue; }
       if (ch === "\t") { result += "\\t"; continue; }
     }
+
     result += ch;
   }
   return result;

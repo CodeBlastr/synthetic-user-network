@@ -6,264 +6,280 @@ export function renderHomePage(): string {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SUN MVP</title>
+    <title>SUN</title>
     <style>
       :root {
-        --paper: #f5efe2;
-        --paper-strong: #fffaf0;
         --ink: #1d1a16;
         --muted: #665d52;
         --accent: #b94e24;
-        --accent-soft: rgba(185, 78, 36, 0.14);
-        --line: rgba(29, 26, 22, 0.16);
-        --shadow: 0 24px 80px rgba(29, 26, 22, 0.12);
-        --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
-        --font-body: "Avenir Next", "Segoe UI", sans-serif;
+        --accent-soft: rgba(185, 78, 36, 0.12);
+        --line: rgba(29, 26, 22, 0.13);
+        --bg: #f2ebe0;
+        --card: rgba(255, 251, 244, 0.92);
+        --font: "Avenir Next", "Segoe UI", sans-serif;
       }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        margin: 0;
+        background: var(--bg);
         color: var(--ink);
-        background:
-          radial-gradient(circle at top left, rgba(185, 78, 36, 0.18), transparent 32%),
-          radial-gradient(circle at bottom right, rgba(34, 83, 120, 0.16), transparent 28%),
-          linear-gradient(180deg, #f7f1e6 0%, #efe4d1 100%);
-        font-family: var(--font-body);
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 1.6;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
-      .shell {
-        width: min(1180px, calc(100vw - 32px));
-        margin: 32px auto 48px;
+      /* ── top bar ── */
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--card);
+        flex-shrink: 0;
       }
-      .hero, .panel, .stream-card, .review-link {
-        background: rgba(255, 250, 240, 0.88);
-        backdrop-filter: blur(18px);
-        border: 1px solid var(--line);
-        border-radius: 28px;
-        box-shadow: var(--shadow);
-      }
-      .hero {
-        padding: 28px;
-        display: grid;
-        gap: 16px;
-      }
-      .eyebrow {
-        letter-spacing: 0.18em;
+      .topbar-logo {
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         color: var(--accent);
-        font-size: 12px;
-        font-weight: 700;
       }
-      h1, h2, h3 {
-        margin: 0;
-        font-family: var(--font-display);
-        font-weight: 600;
-      }
-      h1 {
-        font-size: clamp(2.4rem, 5vw, 4rem);
-        line-height: 0.95;
-        max-width: 11ch;
-      }
-      .subhead {
-        max-width: 68ch;
+      .topbar-sep { color: var(--line); }
+      #planStatus {
         color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.7;
+        font-size: 13px;
       }
-      .layout {
-        margin-top: 24px;
+      /* ── 3-column layout ── */
+      .columns {
+        flex: 1;
         display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-        gap: 20px;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0;
+        overflow: hidden;
       }
-      .panel {
-        padding: 24px;
+      .col {
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
-      textarea {
-        width: 100%;
-        min-height: 220px;
-        resize: vertical;
-        border-radius: 22px;
-        border: 1px solid rgba(29, 26, 22, 0.18);
-        background: rgba(255, 255, 255, 0.92);
-        padding: 18px;
-        font: 500 0.98rem/1.6 "American Typewriter", "Courier New", monospace;
-        color: var(--ink);
-      }
-      button, .ghost-link {
-        appearance: none;
-        border: 0;
-        border-radius: 999px;
-        padding: 14px 20px;
-        font: 700 0.95rem/1 var(--font-body);
-        cursor: pointer;
-        transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
-      }
-      button:hover, .ghost-link:hover {
-        transform: translateY(-1px);
-      }
-      .primary {
-        background: var(--ink);
-        color: var(--paper-strong);
-        box-shadow: 0 16px 40px rgba(29, 26, 22, 0.22);
-      }
-      .accent {
-        background: var(--accent);
-        color: white;
-        box-shadow: 0 16px 40px rgba(185, 78, 36, 0.28);
-      }
-      .muted-button {
-        background: rgba(29, 26, 22, 0.08);
-        color: var(--ink);
-      }
-      .stack {
-        display: grid;
-        gap: 16px;
-      }
-      .plan-header, .status-line {
+      .col:last-child { border-right: none; }
+      .col-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
+        flex-shrink: 0;
+        background: var(--card);
+      }
+      .col-header h2 {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
       }
       .pill {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         border-radius: 999px;
-        padding: 8px 12px;
+        padding: 4px 10px;
         background: var(--accent-soft);
         color: var(--accent);
-        font-size: 0.82rem;
+        font-size: 11px;
         font-weight: 700;
       }
-      .steps, .events {
-        display: grid;
+      .col-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
       }
-      .step, .event {
-        padding: 14px;
-        border-radius: 18px;
-        border: 1px solid rgba(29, 26, 22, 0.1);
-        background: rgba(255, 255, 255, 0.7);
+      /* ── plan column ── */
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: white;
+        padding: 12px;
+        font: 500 13px/1.6 "American Typewriter", "Courier New", monospace;
+        color: var(--ink);
       }
-      .step strong, .event strong {
-        display: block;
-        margin-bottom: 6px;
+      .btn-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      .meta {
-        color: var(--muted);
-        font-size: 0.92rem;
-        line-height: 1.6;
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 9px 18px;
+        font: 700 13px/1 var(--font);
+        cursor: pointer;
+        transition: opacity 150ms;
       }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-primary { background: var(--ink); color: white; }
+      .btn-execute { background: var(--accent); color: white; width: 100%; padding: 12px; font-size: 14px; border-radius: 10px; }
+      /* ── plan display ── */
+      .plan-meta { color: var(--muted); font-size: 13px; }
+      .plan-meta b { color: var(--ink); }
+      .url-pill {
+        display: inline-block;
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        word-break: break-all;
+        margin-bottom: 4px;
+      }
+      .steps { display: grid; gap: 8px; }
+      .step {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: white;
+      }
+      .step strong { display: block; margin-bottom: 4px; font-size: 13px; }
+      .step .meta { font-size: 12px; color: var(--muted); }
+      /* ── stream column ── */
+      .events { display: flex; flex-direction: column; gap: 8px; }
+      .event {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: white;
+      }
+      .event strong { display: block; font-size: 13px; margin-bottom: 2px; }
+      .event .ts { font-size: 11px; color: var(--muted); }
+      /* ── visuals column ── */
       .preview-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
       }
       .preview {
-        border-radius: 18px;
+        border-radius: 10px;
         overflow: hidden;
-        border: 1px solid rgba(29, 26, 22, 0.1);
-        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid var(--line);
+        background: white;
       }
       .preview img {
         display: block;
         width: 100%;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 4/3;
         object-fit: cover;
-        background: #ddd2bf;
+        background: #e8dfd0;
       }
       .preview span {
         display: block;
-        padding: 10px;
-        font-size: 0.82rem;
+        padding: 7px 9px;
+        font-size: 11px;
         color: var(--muted);
       }
-      .review-link {
-        margin-top: 20px;
-        padding: 18px 20px;
+      /* ── review link ── */
+      .review-ready {
         display: none;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid var(--accent);
+        background: var(--accent-soft);
       }
-      .empty-state {
-        color: var(--muted);
-        line-height: 1.7;
+      .review-ready strong { display: block; color: var(--accent); margin-bottom: 6px; }
+      .review-ready a {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 9px 18px;
+        background: var(--accent);
+        color: white;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
       }
-      .loader {
-        width: 14px;
-        height: 14px;
+      /* ── empty states ── */
+      .empty { color: var(--muted); font-size: 13px; }
+      /* ── loader dot ── */
+      .dot {
+        width: 8px; height: 8px;
         border-radius: 50%;
         background: var(--accent);
-        box-shadow: 24px 0 var(--accent-soft), -24px 0 rgba(29, 26, 22, 0.12);
         animation: pulse 1s infinite ease-in-out;
+        display: inline-block;
       }
       @keyframes pulse {
-        0%, 100% { transform: scale(0.9); opacity: 0.65; }
-        50% { transform: scale(1.1); opacity: 1; }
-      }
-      @media (max-width: 900px) {
-        .layout {
-          grid-template-columns: 1fr;
-        }
-        .shell {
-          width: min(100vw - 20px, 1180px);
-          margin-top: 20px;
-        }
+        0%, 100% { opacity: 0.4; transform: scale(0.85); }
+        50% { opacity: 1; transform: scale(1); }
       }
     </style>
   </head>
   <body>
-    <main class="shell">
-      <section class="hero">
-        <div class="eyebrow">Synthetic User Network</div>
-        <h1>Prompt a test. Review the plan. Approve the run.</h1>
-        <p class="subhead">
-          SUN’s MVP stays recommendation-first. You describe the browser journey you want reviewed,
-          SUN drafts an execution plan, waits for approval, captures evidence, and then publishes one
-          recommendation page with screenshots, reasoning, and a Codex-ready implementation prompt.
-        </p>
-      </section>
+    <div class="topbar">
+      <span class="topbar-logo">SUN</span>
+      <span class="topbar-sep">·</span>
+      <span id="planStatus">Enter a prompt to begin.</span>
+    </div>
 
-      <section class="layout">
-        <div class="panel stack">
-          <div class="plan-header">
-            <h2>1. Describe The Test</h2>
-            <span class="pill">Docker target: localhost:3020</span>
-          </div>
+    <div class="columns">
+
+      <!-- Column 1: Plan the Test -->
+      <div class="col">
+        <div class="col-header">
+          <h2>Plan the Test</h2>
+          <span class="pill">localhost:3020</span>
+        </div>
+        <div class="col-body">
           <textarea id="promptInput" spellcheck="false">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
-          <div class="status-line">
-            <button id="planButton" class="primary">Generate Plan</button>
-            <div id="planStatus" class="meta">Waiting for a prompt.</div>
+          <div class="btn-row">
+            <button id="planButton" class="btn-primary">Generate Plan</button>
           </div>
-          <div id="planContainer" class="empty-state">
-            The plan will appear here with an approval button before SUN touches the browser.
+          <div id="planContainer" class="empty">
+            The plan will appear here once generated.
           </div>
-          <div id="reviewLink" class="review-link"></div>
         </div>
+      </div>
 
-        <div class="stack">
-          <section class="panel stream-card stack">
-            <div class="plan-header">
-              <h2>2. Run Stream</h2>
-              <div class="pill"><span class="loader"></span> Live while running</div>
-            </div>
-            <div id="eventFeed" class="events empty-state">
-              Execution events will stream here after you approve a plan.
-            </div>
-          </section>
-
-          <section class="panel stack">
-            <div class="plan-header">
-              <h2>3. Screenshot Evidence</h2>
-              <div class="pill">Preview rail</div>
-            </div>
-            <div id="previewGrid" class="preview-grid">
-              <div class="empty-state">Screenshot previews will appear as SUN captures them.</div>
-            </div>
-          </section>
+      <!-- Column 2: Test Execution -->
+      <div class="col">
+        <div class="col-header">
+          <h2>Test Execution</h2>
+          <div class="pill"><span class="dot"></span> Live</div>
         </div>
-      </section>
-    </main>
+        <div class="col-body">
+          <div id="eventFeed" class="events">
+            <div class="empty">Events will stream here after you approve a plan.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3: Visuals -->
+      <div class="col">
+        <div class="col-header">
+          <h2>Visuals</h2>
+          <span class="pill">Screenshots</span>
+        </div>
+        <div class="col-body">
+          <div id="reviewReady" class="review-ready"></div>
+          <div id="previewGrid" class="preview-grid">
+            <div class="empty">Screenshots will appear as SUN captures them.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
 
     <script type="module">
       const promptInput = document.getElementById("promptInput");
@@ -272,18 +288,18 @@ export function renderHomePage(): string {
       const planContainer = document.getElementById("planContainer");
       const eventFeed = document.getElementById("eventFeed");
       const previewGrid = document.getElementById("previewGrid");
-      const reviewLink = document.getElementById("reviewLink");
+      const reviewReady = document.getElementById("reviewReady");
 
-      let activeRunId = null;
       let eventSource = null;
 
       planButton.addEventListener("click", async () => {
         planButton.disabled = true;
-        planStatus.textContent = "Generating an AI-backed plan...";
-        reviewLink.style.display = "none";
-        reviewLink.innerHTML = "";
-        eventFeed.innerHTML = '<div class="empty-state">Plan requested. Waiting for SUN.</div>';
-        previewGrid.innerHTML = '<div class="empty-state">No screenshots yet.</div>';
+        planStatus.textContent = "Generating plan...";
+        reviewReady.style.display = "none";
+        reviewReady.innerHTML = "";
+        eventFeed.innerHTML = ‘<div class="empty">Waiting for plan...</div>’;
+        previewGrid.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
+        planContainer.innerHTML = ‘<div class="empty">Thinking...</div>’;
 
         try {
           const response = await fetch("/api/plans", {
@@ -292,15 +308,12 @@ export function renderHomePage(): string {
             body: JSON.stringify({ prompt: promptInput.value })
           });
           const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || "Unable to generate plan.");
-          }
-          activeRunId = payload.run.id;
+          if (!response.ok) throw new Error(payload.error || "Unable to generate plan.");
           renderPlan(payload.run);
-          planStatus.textContent = "Plan ready. Review it before you execute.";
-        } catch (error) {
-          planContainer.innerHTML = '<div class="empty-state">' + escapeHtml(error.message) + '</div>';
-          planStatus.textContent = "Plan generation failed.";
+          planStatus.textContent = "Plan ready — review and execute.";
+        } catch (err) {
+          planContainer.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
+          planStatus.textContent = "Plan failed.";
         } finally {
           planButton.disabled = false;
         }
@@ -308,65 +321,56 @@ export function renderHomePage(): string {
 
       function renderPlan(run) {
         const plan = run.plan;
-        const steps = plan.steps.map((step) => \`
+        const steps = plan.steps.map((s) => \`
           <div class="step">
-            <strong>\${escapeHtml(step.title)}</strong>
-            <div class="meta">\${escapeHtml(step.purpose)}</div>
-            <div class="meta"><b>Evidence:</b> \${escapeHtml(step.evidenceToCollect)}</div>
+            <strong>\${escapeHtml(s.title)}</strong>
+            <div class="meta">\${escapeHtml(s.purpose)}</div>
+            <div class="meta" style="margin-top:4px"><b>Evidence:</b> \${escapeHtml(s.evidenceToCollect)}</div>
           </div>
         \`).join("");
 
         planContainer.innerHTML = \`
-          <div class="stack">
-            <div class="plan-header">
-              <h3>\${escapeHtml(plan.runName)}</h3>
-              <span class="pill">\${escapeHtml(plan.startingUrl)}</span>
-            </div>
-            <div class="meta"><b>Goal:</b> \${escapeHtml(plan.goal)}</div>
-            <div class="meta"><b>Focus:</b> \${plan.focusAreas.map(escapeHtml).join(" | ")}</div>
-            <div class="meta"><b>Constraints:</b> \${plan.constraints.map(escapeHtml).join(" | ")}</div>
-            <div class="meta"><b>Completion signal:</b> \${escapeHtml(plan.completionSignal)}</div>
-            <div class="steps">\${steps}</div>
-            <button id="executeButton" class="accent">Execute? Yes.</button>
-          </div>
+          <div class="url-pill">\${escapeHtml(plan.startingUrl)}</div>
+          <div class="plan-meta"><b>Goal:</b> \${escapeHtml(plan.goal)}</div>
+          <div class="plan-meta"><b>Focus:</b> \${plan.focusAreas.map(escapeHtml).join(" · ")}</div>
+          <div class="plan-meta"><b>Constraints:</b> \${plan.constraints.map(escapeHtml).join(" · ")}</div>
+          <div class="plan-meta"><b>Done when:</b> \${escapeHtml(plan.completionSignal)}</div>
+          <div class="steps">\${steps}</div>
+          <button id="executeButton" class="btn-execute">Execute? Yes.</button>
         \`;
-
         document.getElementById("executeButton").addEventListener("click", () => executeRun(run.id));
       }
 
       async function executeRun(runId) {
-        planStatus.textContent = "Execution approved. SUN is collecting evidence.";
+        planStatus.textContent = "Running...";
         connectEvents(runId);
         const response = await fetch(\`/api/runs/\${runId}/execute\`, { method: "POST" });
         const payload = await response.json();
         if (!response.ok) {
-          planStatus.textContent = "Execution failed to start.";
-          eventFeed.innerHTML = '<div class="event"><strong>Unable to start</strong><div class="meta">' + escapeHtml(payload.error || "Unknown error.") + '</div></div>';
-          return;
+          planStatus.textContent = "Failed to start.";
+          eventFeed.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(payload.error || "Unknown error.") + ‘</div></div>’;
         }
       }
 
       function connectEvents(runId) {
-        if (eventSource) {
-          eventSource.close();
-        }
+        if (eventSource) eventSource.close();
         eventFeed.innerHTML = "";
         previewGrid.innerHTML = "";
         eventSource = new EventSource(\`/api/runs/\${runId}/events\`);
-        eventSource.onmessage = (event) => {
-          const payload = JSON.parse(event.data);
-          appendEvent(payload);
-          if (payload.type === "screenshot_captured" && payload.data && payload.data.screenshot) {
-            appendScreenshot(payload.data.screenshot);
+        eventSource.onmessage = (e) => {
+          const payload = JSON.parse(e.data);
+          prependEvent(payload);
+          if (payload.type === "screenshot_captured" && payload.data?.screenshot) {
+            prependScreenshot(payload.data.screenshot);
           }
-          if (payload.type === "run_completed" && payload.data && payload.data.reviewPath) {
-            reviewLink.style.display = "block";
-            reviewLink.innerHTML = \`
-              <strong>Review ready.</strong>
-              <div class="meta">SUN finished the run and assembled the recommendation page.</div>
-              <p><a class="ghost-link muted-button" href="\${payload.data.reviewPath}">Open analysis review</a></p>
+          if (payload.type === "run_completed" && payload.data?.reviewPath) {
+            reviewReady.style.display = "block";
+            reviewReady.innerHTML = \`
+              <strong>Analysis ready</strong>
+              <div>SUN finished the run and assembled the recommendation.</div>
+              <a href="\${payload.data.reviewPath}">Open review &rarr;</a>
             \`;
-            planStatus.textContent = "Run completed.";
+            planStatus.textContent = "Done.";
             eventSource.close();
           }
           if (payload.type === "run_failed") {
@@ -376,37 +380,31 @@ export function renderHomePage(): string {
         };
       }
 
-      function appendEvent(event) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "event";
-        wrapper.innerHTML = \`
+      function prependEvent(event) {
+        const el = document.createElement("div");
+        el.className = "event";
+        el.innerHTML = \`
           <strong>\${escapeHtml(event.message)}</strong>
-          <div class="meta">\${escapeHtml(new Date(event.createdAt).toLocaleString())}</div>
+          <div class="ts">\${new Date(event.createdAt).toLocaleTimeString()}</div>
         \`;
-        eventFeed.prepend(wrapper);
+        eventFeed.prepend(el);
       }
 
-      function appendScreenshot(screenshot) {
-        const empty = previewGrid.querySelector(".empty-state");
-        if (empty) {
-          empty.remove();
-        }
-        const card = document.createElement("div");
-        card.className = "preview";
-        card.innerHTML = \`
-          <img src="/artifacts/\${encodeURI(screenshot.relativePath)}" alt="\${escapeHtml(screenshot.label)}" />
-          <span>\${escapeHtml(screenshot.label)}</span>
+      function prependScreenshot(shot) {
+        previewGrid.querySelectorAll(".empty").forEach(n => n.remove());
+        const el = document.createElement("div");
+        el.className = "preview";
+        el.innerHTML = \`
+          <img src="/artifacts/\${encodeURI(shot.relativePath)}" alt="\${escapeHtml(shot.label)}" />
+          <span>\${escapeHtml(shot.label)}</span>
         \`;
-        previewGrid.prepend(card);
+        previewGrid.prepend(el);
       }
 
-      function escapeHtml(value) {
-        return String(value)
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#39;");
+      function escapeHtml(v) {
+        return String(v)
+          .replaceAll("&","&amp;").replaceAll("<","&lt;")
+          .replaceAll(">","&gt;").replaceAll(‘"’,"&quot;").replaceAll("’","&#39;");
       }
     </script>
   </body>
