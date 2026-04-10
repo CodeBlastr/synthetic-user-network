@@ -8,6 +8,7 @@ import { config as loadEnv } from "dotenv";
 import { executePlan } from "./browser.js";
 import { renderHomePage, renderReviewPage } from "./html.js";
 import { clientJs } from "./client.js";
+import { reviewClientJs } from "./review-client.js";
 import { SunAiService } from "./ai.js";
 import { RunEventHub, RunStore } from "./store.js";
 import type { RunAnalysis, RunRecord } from "./types.js";
@@ -99,6 +100,34 @@ const server = createServer(async (request, response) => {
       });
     }
 
+    const retestsMatch = requestUrl.pathname.match(/^\/api\/runs\/([^/]+)\/retests$/);
+    if (retestsMatch) {
+      const parentRunId = decodeURIComponent(retestsMatch[1]);
+
+      if (request.method === "POST") {
+        const parent = await store.load(parentRunId);
+        if (!parent || !parent.plan) {
+          return sendJson(response, 404, { error: "Run or plan not found." });
+        }
+        if (parent.status !== "completed" && parent.status !== "failed") {
+          return sendJson(response, 409, { error: "Parent run has not finished yet." });
+        }
+        const retest = await store.createRetest(parentRunId);
+        runningRuns.add(retest.id);
+        void runExecution(retest).finally(() => {
+          runningRuns.delete(retest.id);
+        });
+        return sendJson(response, 200, { retestId: retest.id });
+      }
+
+      if (request.method === "GET") {
+        const retests = await store.listRetests(parentRunId);
+        return sendJson(response, 200, { retests });
+      }
+
+      return sendJson(response, 405, { error: "Method not allowed." });
+    }
+
     if (request.method === "GET" && requestUrl.pathname === "/api/runs") {
       const runs = await store.listRuns(20);
       const summary = runs.map((r) => ({
@@ -174,6 +203,12 @@ const server = createServer(async (request, response) => {
     if (request.method === "GET" && requestUrl.pathname === "/sun-client.js") {
       response.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8" });
       response.end(clientJs);
+      return;
+    }
+
+    if (request.method === "GET" && requestUrl.pathname === "/sun-review.js") {
+      response.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8" });
+      response.end(reviewClientJs);
       return;
     }
 

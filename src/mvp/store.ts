@@ -188,6 +188,49 @@ export class RunStore {
   }
 
   async listRuns(limit = 20): Promise<RunRecord[]> {
+    const runs = await this.loadAllRuns();
+    return runs
+      .filter((r) => !r.parentRunId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+  }
+
+  async createRetest(parentRunId: string): Promise<RunRecord> {
+    const parent = await this.load(parentRunId);
+    if (!parent || !parent.plan) {
+      throw new Error(`Parent run ${parentRunId} not found or has no plan.`);
+    }
+    const runId = randomUUID();
+    const now = new Date().toISOString();
+    const run: RunRecord = {
+      id: runId,
+      parentRunId,
+      prompt: parent.prompt,
+      createdAt: now,
+      updatedAt: now,
+      status: "planned",
+      executionOutcome: "not_started",
+      failureMessage: null,
+      finalUrl: null,
+      reviewPath: null,
+      plan: parent.plan,
+      screenshots: [],
+      actionHistory: [],
+      analysis: null,
+      events: []
+    };
+    await this.save(run);
+    return run;
+  }
+
+  async listRetests(parentRunId: string): Promise<RunRecord[]> {
+    const all = await this.loadAllRuns();
+    return all
+      .filter((r) => r.parentRunId === parentRunId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  private async loadAllRuns(): Promise<RunRecord[]> {
     try {
       const entries = await readdir(this.runsDir, { withFileTypes: true });
       const runs: RunRecord[] = [];
@@ -197,8 +240,7 @@ export class RunStore {
           if (run) runs.push(run);
         }
       }
-      runs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      return runs.slice(0, limit);
+      return runs;
     } catch {
       return [];
     }

@@ -74,6 +74,7 @@ export interface RunAnalysis {
 
 export interface RunRecord {
   id: string;
+  parentRunId?: string;
   prompt: string;
   createdAt: string;
   updatedAt: string;

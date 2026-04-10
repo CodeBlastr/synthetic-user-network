@@ -385,6 +385,7 @@ export function renderReviewPage(run: RunRecord): string {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="sun-run-id" content="${escapeHtml(run.id)}" />
     <title>${escapeHtml(run.plan?.runName ?? "SUN Review")}</title>
     <style>
       :root {
@@ -492,6 +493,20 @@ export function renderReviewPage(run: RunRecord): string {
         margin: 0;
         padding-left: 18px;
       }
+      .retest-card { border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,0.65); overflow:hidden; }
+      .retest-header { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+      .retest-status { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent); }
+      .retest-body { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+      .retest-events { padding:14px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto; }
+      .retest-shots { padding:14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; align-content:start; }
+      .retest-shot img { width:100%; border-radius:10px; border:1px solid var(--line); }
+      .retest-shot span { display:block; font-size:11px; color:var(--muted); margin-top:3px; }
+      .retest-event { padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:white; }
+      .retest-event strong { display:block; font-size:12px; }
+      .retest-event .ts { font-size:10px; color:var(--muted); }
+      .retest-prompt { padding:14px 18px; border-top:1px solid var(--line); }
+      .retest-prompt .eyebrow { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+      .retest-prompt textarea { width:100%; min-height:100px; font-family:monospace; font-size:12px; border:1px solid var(--line); border-radius:8px; padding:10px; background:white; resize:vertical; }
       @media (max-width: 900px) {
         .grid {
           grid-template-columns: 1fr;
@@ -548,15 +563,20 @@ export function renderReviewPage(run: RunRecord): string {
         <textarea id="codexPrompt" readonly>${escapeHtml(analysis?.codexPromptMarkdown ?? "")}</textarea>
         <p><button id="copyButton">Copy Markdown</button></p>
       </section>
+
+      <section class="card" id="verificationHistory">
+        <div class="eyebrow">Verification History</div>
+        <h2>Re-Tests</h2>
+        <p id="retestEmpty" style="color:var(--muted);font-size:13px;margin:0 0 16px;">
+          No verification tests have been run yet.
+        </p>
+        <div id="retestList" style="display:flex;flex-direction:column;gap:16px;"></div>
+        <p style="margin-top:20px;">
+          <button id="runVerificationBtn" onclick="window.sunStartRetest()">Run Verification Test</button>
+        </p>
+      </section>
     </main>
-    <script>
-      document.getElementById("copyButton").addEventListener("click", async () => {
-        const field = document.getElementById("codexPrompt");
-        field.select();
-        field.setSelectionRange(0, field.value.length);
-        await navigator.clipboard.writeText(field.value);
-      });
-    </script>
+    <script src="/sun-review.js"></script>
   </body>
 </html>`;
 }
