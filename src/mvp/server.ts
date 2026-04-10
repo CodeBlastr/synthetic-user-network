@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
 import { executePlan } from "./browser.js";
 import { renderHomePage, renderReviewPage } from "./html.js";
+import { clientJs } from "./client.js";
 import { SunAiService } from "./ai.js";
 import { RunEventHub, RunStore } from "./store.js";
 import type { RunAnalysis, RunRecord } from "./types.js";
@@ -155,6 +156,12 @@ const server = createServer(async (request, response) => {
         return sendHtml(response, "<h1>Run not found.</h1>", 404);
       }
       return sendHtml(response, renderReviewPage(run));
+    }
+
+    if (request.method === "GET" && requestUrl.pathname === "/sun-client.js") {
+      response.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8" });
+      response.end(clientJs);
+      return;
     }
 
     const artifactMatch = requestUrl.pathname.match(/^\/artifacts\/(.+)$/);
