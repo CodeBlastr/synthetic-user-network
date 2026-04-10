@@ -65,17 +65,21 @@ export function renderHomePage(): string {
       #promptInput {
         flex: 1;
         min-width: 0;
-        height: 32px;
+        height: auto;
+        min-height: 28px;
+        max-height: calc(21px * 12);
         background: transparent;
         border: none;
         border-bottom: 1px solid rgba(29, 26, 22, 0.28);
         border-radius: 0;
-        padding: 0 8px;
-        font: 500 13px/1 var(--font);
+        padding: 4px 8px;
+        font: 500 13px/21px var(--font);
         color: var(--ink);
         resize: none;
-        overflow: hidden;
+        overflow-y: hidden;
         outline: none;
+        line-height: 21px;
+        align-self: center;
       }
       #promptInput::placeholder { color: var(--muted); }
       #promptInput:focus { border-bottom-color: var(--accent); }
@@ -292,8 +296,8 @@ export function renderHomePage(): string {
       <span class="topbar-logo">SUN</span>
       <span class="topbar-sep">|</span>
       <span class="topbar-label">Write a Testing Plan to Begin</span>
-      <textarea id="promptInput" rows="1" spellcheck="false">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
-      <button id="planButton" onclick="sunGeneratePlan()">Generate Plan</button>
+      <textarea id="promptInput" rows="1" spellcheck="false" oninput="window.sunResizePrompt(this)">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
+      <button id="planButton" onclick="window.sunGeneratePlan()">Generate Plan</button>
     </div>
 
     <div class="columns">
@@ -339,33 +343,46 @@ export function renderHomePage(): string {
     </div>
 
     <script>
-      var _eventSource = null;
+      // Assign everything explicitly to window so onclick attributes can always find them,
+      // regardless of strict mode or script execution context.
+      window._sunEs = null;
 
-      function escapeHtml(v) {
-        return String(v)
-          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      window.sunEsc = function(v) {
+        return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;")
           .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/’/g,"&#39;");
-      }
+      };
 
-      function sunGeneratePlan() {
-        var promptEl = document.getElementById("promptInput");
-        var planBtn = document.getElementById("planButton");
-        var planContainer = document.getElementById("planContainer");
-        var eventFeed = document.getElementById("eventFeed");
-        var previewGrid = document.getElementById("previewGrid");
-        var reviewReady = document.getElementById("reviewReady");
-
-        var prompt = promptEl ? promptEl.value.trim() : "";
-        if (!prompt) {
-          alert("Please enter a test prompt first.");
-          return;
+      window.sunResizePrompt = function(el) {
+        el.style.overflowY = "hidden";
+        el.style.height = "auto";
+        var maxH = 21 * 12; // 12 lines at 21px line-height
+        if (el.scrollHeight > maxH) {
+          el.style.height = maxH + "px";
+          el.style.overflowY = "scroll";
+        } else {
+          el.style.height = el.scrollHeight + "px";
         }
+      };
 
-        if (planBtn) planBtn.disabled = true;
-        if (reviewReady) { reviewReady.style.display = "none"; reviewReady.innerHTML = ""; }
-        if (eventFeed) eventFeed.innerHTML = ‘<div class="empty">Waiting for execution...</div>’;
-        if (previewGrid) previewGrid.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
-        if (planContainer) planContainer.innerHTML = ‘<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div>Generating plan\u2026</div>’;
+      window.sunGeneratePlan = function() {
+        var inp = document.getElementById("promptInput");
+        var btn = document.getElementById("planButton");
+        var pc  = document.getElementById("planContainer");
+        var ef  = document.getElementById("eventFeed");
+        var pg  = document.getElementById("previewGrid");
+        var rr  = document.getElementById("reviewReady");
+
+        var prompt = inp ? inp.value.trim() : "";
+        if (!prompt) { alert("Please enter a test prompt first."); return; }
+
+        // Shrink input back to one line
+        if (inp) { inp.style.height = ""; inp.style.overflowY = "hidden"; }
+
+        if (btn) btn.disabled = true;
+        if (rr)  { rr.style.display = "none"; rr.innerHTML = ""; }
+        if (ef)  ef.innerHTML = ‘<div class="empty">Waiting for execution...</div>’;
+        if (pg)  pg.innerHTML = ‘<div class="empty">No screenshots yet.</div>’;
+        if (pc)  pc.innerHTML = ‘<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div>Generating plan...</div>’;
 
         fetch("/api/plans", {
           method: "POST",
@@ -374,97 +391,99 @@ export function renderHomePage(): string {
         }).then(function(res) {
           return res.json().then(function(body) {
             if (!res.ok) throw new Error(body.error || "Unable to generate plan.");
-            sunRenderPlan(body.run);
+            window.sunRenderPlan(body.run);
           });
         }).catch(function(err) {
-          var pc = document.getElementById("planContainer");
-          if (pc) pc.innerHTML = ‘<div class="empty">’ + escapeHtml(err.message) + ‘</div>’;
-        }).finally(function() {
-          var btn = document.getElementById("planButton");
-          if (btn) btn.disabled = false;
+          var el = document.getElementById("planContainer");
+          if (el) el.innerHTML = ‘<div class="empty">’ + window.sunEsc(err.message) + ‘</div>’;
+        }).then(function() {
+          var b = document.getElementById("planButton");
+          if (b) b.disabled = false;
         });
-      }
+      };
 
-      function sunRenderPlan(run) {
+      window.sunRenderPlan = function(run) {
         var plan = run.plan;
-        var steps = plan.steps.map(function(s) {
-          return ‘<div class="step"><strong>’ + escapeHtml(s.title) + ‘</strong>’ +
-            ‘<div class="meta">’ + escapeHtml(s.purpose) + ‘</div>’ +
-            ‘<div class="meta" style="margin-top:4px"><b>Evidence:</b> ‘ + escapeHtml(s.evidenceToCollect) + ‘</div></div>’;
-        }).join("");
-
+        var steps = "";
+        for (var i = 0; i < plan.steps.length; i++) {
+          var s = plan.steps[i];
+          steps += ‘<div class="step"><strong>’ + window.sunEsc(s.title) + ‘</strong>’ +
+            ‘<div class="meta">’ + window.sunEsc(s.purpose) + ‘</div>’ +
+            ‘<div class="meta" style="margin-top:4px"><b>Evidence:</b> ‘ + window.sunEsc(s.evidenceToCollect) + ‘</div></div>’;
+        }
         var pc = document.getElementById("planContainer");
-        if (pc) pc.innerHTML =
-          ‘<div class="url-pill">’ + escapeHtml(plan.startingUrl) + ‘</div>’ +
-          ‘<div class="plan-meta"><b>Goal:</b> ‘ + escapeHtml(plan.goal) + ‘</div>’ +
-          ‘<div class="plan-meta"><b>Focus:</b> ‘ + plan.focusAreas.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
-          ‘<div class="plan-meta"><b>Constraints:</b> ‘ + plan.constraints.map(escapeHtml).join(‘ &middot; ‘) + ‘</div>’ +
-          ‘<div class="plan-meta"><b>Done when:</b> ‘ + escapeHtml(plan.completionSignal) + ‘</div>’ +
+        if (!pc) return;
+        pc.innerHTML =
+          ‘<div class="url-pill">’ + window.sunEsc(plan.startingUrl) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Goal:</b> ‘ + window.sunEsc(plan.goal) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Focus:</b> ‘ + plan.focusAreas.map(window.sunEsc).join(‘ &middot; ‘) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Constraints:</b> ‘ + plan.constraints.map(window.sunEsc).join(‘ &middot; ‘) + ‘</div>’ +
+          ‘<div class="plan-meta"><b>Done when:</b> ‘ + window.sunEsc(plan.completionSignal) + ‘</div>’ +
           ‘<div class="steps">’ + steps + ‘</div>’ +
-          ‘<button class="btn-execute" onclick="sunExecuteRun(\’’ + escapeHtml(run.id) + ‘\’)">Execute? Yes.</button>’;
-      }
+          ‘<button class="btn-execute" onclick="window.sunExecuteRun(‘ + "’" + window.sunEsc(run.id) + "’" + ‘)">Execute? Yes.</button>’;
+      };
 
-      function sunExecuteRun(runId) {
-        sunConnectEvents(runId);
+      window.sunExecuteRun = function(runId) {
+        window.sunConnectEvents(runId);
         fetch("/api/runs/" + runId + "/execute", { method: "POST" })
           .then(function(res) {
             return res.json().then(function(body) {
               if (!res.ok) {
                 var ef = document.getElementById("eventFeed");
-                if (ef) ef.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + escapeHtml(body.error || "Unknown error.") + ‘</div></div>’;
+                if (ef) ef.innerHTML = ‘<div class="event"><strong>Error</strong><div class="ts">’ + window.sunEsc(body.error || "Unknown.") + ‘</div></div>’;
               }
             });
           });
-      }
+      };
 
-      function sunConnectEvents(runId) {
-        if (_eventSource) _eventSource.close();
-        var eventFeed = document.getElementById("eventFeed");
-        var previewGrid = document.getElementById("previewGrid");
-        if (eventFeed) eventFeed.innerHTML = "";
-        if (previewGrid) previewGrid.innerHTML = "";
-        _eventSource = new EventSource("/api/runs/" + runId + "/events");
-        _eventSource.onmessage = function(e) {
-          var payload = JSON.parse(e.data);
-          sunPrependEvent(payload);
-          if (payload.type === "screenshot_captured" && payload.data && payload.data.screenshot) {
-            sunPrependScreenshot(payload.data.screenshot);
+      window.sunConnectEvents = function(runId) {
+        if (window._sunEs) window._sunEs.close();
+        var ef = document.getElementById("eventFeed");
+        var pg = document.getElementById("previewGrid");
+        if (ef) ef.innerHTML = "";
+        if (pg) pg.innerHTML = "";
+        window._sunEs = new EventSource("/api/runs/" + runId + "/events");
+        window._sunEs.onmessage = function(e) {
+          var p = JSON.parse(e.data);
+          window.sunPrependEvent(p);
+          if (p.type === "screenshot_captured" && p.data && p.data.screenshot) {
+            window.sunPrependScreenshot(p.data.screenshot);
           }
-          if (payload.type === "run_completed" && payload.data && payload.data.reviewPath) {
+          if (p.type === "run_completed" && p.data && p.data.reviewPath) {
             var rr = document.getElementById("reviewReady");
             if (rr) {
               rr.style.display = "block";
-              rr.innerHTML = ‘<strong>Analysis ready</strong><p>SUN finished and assembled the recommendation.</p>’ +
-                ‘<a href="’ + payload.data.reviewPath + ‘">Open review &#8594;</a>’;
+              rr.innerHTML = ‘<strong>Analysis ready</strong>’ +
+                ‘<p>SUN finished and assembled the recommendation.</p>’ +
+                ‘<a href="’ + p.data.reviewPath + ‘">Open review &#8594;</a>’;
             }
-            _eventSource.close();
+            window._sunEs.close();
           }
-          if (payload.type === "run_failed") {
-            _eventSource.close();
-          }
+          if (p.type === "run_failed") { window._sunEs.close(); }
         };
-      }
+      };
 
-      function sunPrependEvent(event) {
+      window.sunPrependEvent = function(evt) {
         var feed = document.getElementById("eventFeed");
         if (!feed) return;
         var el = document.createElement("div");
         el.className = "event";
-        el.innerHTML = "<strong>" + escapeHtml(event.message) + "</strong>" +
-          ‘<div class="ts">’ + new Date(event.createdAt).toLocaleTimeString() + "</div>";
+        el.innerHTML = "<strong>" + window.sunEsc(evt.message) + "</strong>" +
+          ‘<div class="ts">’ + new Date(evt.createdAt).toLocaleTimeString() + "</div>";
         feed.prepend(el);
-      }
+      };
 
-      function sunPrependScreenshot(shot) {
+      window.sunPrependScreenshot = function(shot) {
         var grid = document.getElementById("previewGrid");
         if (!grid) return;
-        grid.querySelectorAll(".empty").forEach(function(n) { n.parentNode.removeChild(n); });
+        var empties = grid.querySelectorAll(".empty");
+        for (var i = 0; i < empties.length; i++) { empties[i].parentNode.removeChild(empties[i]); }
         var el = document.createElement("div");
         el.className = "preview";
-        el.innerHTML = ‘<img src="/artifacts/’ + encodeURI(shot.relativePath) + ‘" alt="’ + escapeHtml(shot.label) + ‘" />’ +
-          ‘<span>’ + escapeHtml(shot.label) + ‘</span>’;
+        el.innerHTML = ‘<img src="/artifacts/’ + encodeURI(shot.relativePath) + ‘" alt="’ + window.sunEsc(shot.label) + ‘" />’ +
+          ‘<span>’ + window.sunEsc(shot.label) + ‘</span>’;
         grid.prepend(el);
-      }
+      };
     </script>
   </body>
 </html>`;
