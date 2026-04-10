@@ -281,9 +281,23 @@ export const clientJs = `
   // ── dropdown pick ────────────────────────────────────────────────────────
 
   function sunPickRun(runId) {
-    if (!runId) return;
+    if (!runId) {
+      // "Write a Testing Plan to Begin" selected — reset to blank state
+      sessionStorage.removeItem("sun_last_run_id");
+      var inp = document.getElementById("promptInput");
+      if (inp) { inp.value = ""; inp.style.height = ""; inp.style.overflowY = "hidden"; }
+      var pc = document.getElementById("planContainer");
+      if (pc) pc.innerHTML = "<div class=\\"empty\\">Generate a plan above to begin.</div>";
+      var ef = document.getElementById("eventFeed");
+      if (ef) ef.innerHTML = "<div class=\\"empty\\">Events will stream here after you approve a plan.</div>";
+      var pg = document.getElementById("previewGrid");
+      if (pg) pg.innerHTML = "<div class=\\"empty\\">Screenshots will appear as SUN captures them.</div>";
+      var rr = document.getElementById("reviewReady");
+      if (rr) { rr.style.display = "none"; rr.innerHTML = ""; }
+      if (_sunEs) { _sunEs.close(); _sunEs = null; }
+      return;
+    }
     sessionStorage.setItem("sun_last_run_id", runId);
-    // Clear current UI before loading
     var rr = document.getElementById("reviewReady");
     if (rr) { rr.style.display = "none"; rr.innerHTML = ""; }
     var ef = document.getElementById("eventFeed");
