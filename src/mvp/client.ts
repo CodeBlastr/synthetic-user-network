@@ -7,6 +7,8 @@ export const clientJs = `
 (function() {
   var _sunEs = null;
 
+  // ── utilities ────────────────────────────────────────────────────────────
+
   function sunEsc(v) {
     return String(v)
       .replace(/&/g, "&amp;")
@@ -28,6 +30,66 @@ export const clientJs = `
     }
   }
 
+  // ── load & restore a run by ID ───────────────────────────────────────────
+
+  function sunLoadRun(runId) {
+    fetch("/api/runs/" + runId)
+      .then(function(res) { return res.json(); })
+      .then(function(body) {
+        if (!body.run) return;
+        var run = body.run;
+
+        // Restore prompt textarea
+        var inp = document.getElementById("promptInput");
+        if (inp && run.prompt) {
+          inp.value = run.prompt;
+          sunResizePrompt(inp);
+        }
+
+        // Restore plan display (includes Execute button)
+        if (run.plan) sunRenderPlan(run);
+
+        // Restore events oldest-first so prepend ends up newest-on-top
+        var ef = document.getElementById("eventFeed");
+        if (ef && run.events && run.events.length) {
+          ef.innerHTML = "";
+          for (var i = run.events.length - 1; i >= 0; i--) {
+            sunPrependEvent(run.events[i]);
+          }
+        }
+
+        // Restore screenshots oldest-first so prepend ends up newest-on-top
+        var pg = document.getElementById("previewGrid");
+        if (pg && run.screenshots && run.screenshots.length) {
+          pg.innerHTML = "";
+          for (var j = run.screenshots.length - 1; j >= 0; j--) {
+            sunPrependScreenshot(run.screenshots[j]);
+          }
+        }
+
+        // Restore review link if completed
+        if (run.status === "completed" && run.reviewPath) {
+          var rr = document.getElementById("reviewReady");
+          if (rr) {
+            rr.style.display = "block";
+            rr.innerHTML = "<strong>Analysis ready</strong>"
+              + "<p>SUN finished and assembled the recommendation.</p>"
+              + "<a href=\\"" + run.reviewPath + "\\">Open review &rarr;</a>";
+          }
+        }
+
+        // Reconnect stream if still running
+        if (run.status === "running") sunConnectEvents(runId);
+
+        // Sync the dropdown selection to this run
+        var sel = document.getElementById("runHistory");
+        if (sel) sel.value = runId;
+      })
+      .catch(function() {});
+  }
+
+  // ── generate a new plan ──────────────────────────────────────────────────
+
   function sunGeneratePlan() {
     var inp = document.getElementById("promptInput");
     var btn = document.getElementById("planButton");
@@ -35,9 +97,14 @@ export const clientJs = `
     var ef  = document.getElementById("eventFeed");
     var pg  = document.getElementById("previewGrid");
     var rr  = document.getElementById("reviewReady");
+    var sel = document.getElementById("runHistory");
 
     var prompt = inp ? inp.value.trim() : "";
     if (!prompt) { alert("Please enter a test prompt first."); return; }
+
+    // Clear stored run — starting fresh
+    sessionStorage.removeItem("sun_last_run_id");
+    if (sel) sel.value = "";
 
     if (inp) { inp.style.height = ""; inp.style.overflowY = "hidden"; }
     if (btn) btn.disabled = true;
@@ -53,7 +120,11 @@ export const clientJs = `
     }).then(function(res) {
       return res.json().then(function(body) {
         if (!res.ok) throw new Error(body.error || "Unable to generate plan.");
+        // Persist this run for back-navigation restore
+        sessionStorage.setItem("sun_last_run_id", body.run.id);
         sunRenderPlan(body.run);
+        // Add the new run to the top of the dropdown
+        sunPrependRunOption(body.run);
       });
     }).catch(function(err) {
       var el = document.getElementById("planContainer");
@@ -63,6 +134,8 @@ export const clientJs = `
       if (b) b.disabled = false;
     });
   }
+
+  // ── render plan display ──────────────────────────────────────────────────
 
   function sunRenderPlan(run) {
     var plan = run.plan;
@@ -88,6 +161,8 @@ export const clientJs = `
     if (execBtn) execBtn.onclick = function() { sunExecuteRun(run.id); };
   }
 
+  // ── execute an approved run ──────────────────────────────────────────────
+
   function sunExecuteRun(runId) {
     sunConnectEvents(runId);
     fetch("/api/runs/" + runId + "/execute", { method: "POST" })
@@ -100,6 +175,8 @@ export const clientJs = `
         });
       });
   }
+
+  // ── SSE event stream ─────────────────────────────────────────────────────
 
   function sunConnectEvents(runId) {
     if (_sunEs) _sunEs.close();
@@ -122,11 +199,18 @@ export const clientJs = `
             + "<p>SUN finished and assembled the recommendation.</p>"
             + "<a href=\\"" + p.data.reviewPath + "\\">Open review &rarr;</a>";
         }
+        // Update dropdown label status for this run
+        sunUpdateRunOptionStatus(runId, "completed");
         _sunEs.close();
       }
-      if (p.type === "run_failed") { _sunEs.close(); }
+      if (p.type === "run_failed") {
+        sunUpdateRunOptionStatus(runId, "failed");
+        _sunEs.close();
+      }
     };
   }
+
+  // ── DOM helpers ──────────────────────────────────────────────────────────
 
   function sunPrependEvent(evt) {
     var feed = document.getElementById("eventFeed");
@@ -155,8 +239,91 @@ export const clientJs = `
     grid.prepend(el);
   }
 
-  // Expose to global scope for oninput/onclick attributes
+  // ── dropdown helpers ─────────────────────────────────────────────────────
+
+  function sunMakeOptionLabel(r) {
+    var name = r.runName || r.prompt.slice(0, 50);
+    var date = new Date(r.createdAt).toLocaleDateString();
+    return name + " — " + date + " [" + r.status + "]";
+  }
+
+  function sunPrependRunOption(run) {
+    var sel = document.getElementById("runHistory");
+    if (!sel) return;
+    // Don't duplicate
+    if (sel.querySelector("option[value=\\"" + run.id + "\\"]")) return;
+    var opt = document.createElement("option");
+    opt.value = run.id;
+    opt.textContent = sunMakeOptionLabel({
+      runName: run.plan ? run.plan.runName : null,
+      prompt: run.prompt,
+      createdAt: run.createdAt,
+      status: run.status
+    });
+    // Insert after the placeholder (index 0)
+    if (sel.options.length > 1) {
+      sel.insertBefore(opt, sel.options[1]);
+    } else {
+      sel.appendChild(opt);
+    }
+    sel.value = run.id;
+  }
+
+  function sunUpdateRunOptionStatus(runId, status) {
+    var sel = document.getElementById("runHistory");
+    if (!sel) return;
+    var opt = sel.querySelector("option[value=\\"" + runId + "\\"]");
+    if (opt) {
+      opt.textContent = opt.textContent.replace(/\\[\\w+\\]$/, "[" + status + "]");
+    }
+  }
+
+  // ── dropdown pick ────────────────────────────────────────────────────────
+
+  function sunPickRun(runId) {
+    if (!runId) return;
+    sessionStorage.setItem("sun_last_run_id", runId);
+    // Clear current UI before loading
+    var rr = document.getElementById("reviewReady");
+    if (rr) { rr.style.display = "none"; rr.innerHTML = ""; }
+    var ef = document.getElementById("eventFeed");
+    if (ef) ef.innerHTML = "<div class=\\"empty\\">Loading...</div>";
+    var pg = document.getElementById("previewGrid");
+    if (pg) pg.innerHTML = "<div class=\\"empty\\">Loading...</div>";
+    var pc = document.getElementById("planContainer");
+    if (pc) pc.innerHTML = "<div class=\\"empty\\">Loading...</div>";
+    sunLoadRun(runId);
+  }
+
+  // ── expose globals ───────────────────────────────────────────────────────
+
   window.sunGeneratePlan = sunGeneratePlan;
   window.sunResizePrompt = sunResizePrompt;
+  window.sunPickRun      = sunPickRun;
+
+  // ── init on page load ────────────────────────────────────────────────────
+
+  // Populate dropdown with up to 20 past runs
+  fetch("/api/runs")
+    .then(function(res) { return res.json(); })
+    .then(function(body) {
+      var sel = document.getElementById("runHistory");
+      if (!sel || !body.runs || !body.runs.length) return;
+      for (var i = 0; i < body.runs.length; i++) {
+        var r = body.runs[i];
+        var opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = sunMakeOptionLabel(r);
+        sel.appendChild(opt);
+      }
+    })
+    .catch(function() {});
+
+  // Restore last viewed run (survives back-navigation in same tab)
+  var lastRunId = sessionStorage.getItem("sun_last_run_id");
+  if (lastRunId) {
+    sunLoadRun(lastRunId);
+  }
+
 })();
 `;

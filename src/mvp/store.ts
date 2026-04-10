@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type {
@@ -185,6 +185,23 @@ export class RunStore {
 
   async ensureBaseDir(): Promise<void> {
     await mkdir(this.runsDir, { recursive: true });
+  }
+
+  async listRuns(limit = 20): Promise<RunRecord[]> {
+    try {
+      const entries = await readdir(this.runsDir, { withFileTypes: true });
+      const runs: RunRecord[] = [];
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const run = await this.load(entry.name);
+          if (run) runs.push(run);
+        }
+      }
+      runs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return runs.slice(0, limit);
+    } catch {
+      return [];
+    }
   }
 
   private async save(run: RunRecord): Promise<RunRecord> {

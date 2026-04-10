@@ -83,6 +83,20 @@ export function renderHomePage(): string {
       }
       #promptInput::placeholder { color: var(--muted); }
       #promptInput:focus { border-bottom-color: var(--accent); }
+      #runHistory {
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(29, 26, 22, 0.28);
+        border-radius: 0;
+        padding: 4px 4px;
+        font: 500 13px/1 var(--font);
+        color: var(--muted);
+        cursor: pointer;
+        max-width: 220px;
+        outline: none;
+      }
+      #runHistory:focus { border-bottom-color: var(--accent); }
       #planButton {
         appearance: none;
         border: 0;
@@ -296,6 +310,9 @@ export function renderHomePage(): string {
       <span class="topbar-logo">SUN</span>
       <span class="topbar-sep">|</span>
       <span class="topbar-label">Write a Testing Plan to Begin</span>
+      <select id="runHistory" onchange="window.sunPickRun(this.value)" title="Load a previous run">
+        <option value="">Previous runs...</option>
+      </select>
       <textarea id="promptInput" rows="1" spellcheck="false" oninput="window.sunResizePrompt(this)">Go to this url: https://chirpper.com/i/xxxxxx. Create a new post using that invite. Critique the clarity of the process to use that invite, and make a recommendation for next steps to improve that flow.</textarea>
       <button id="planButton" onclick="window.sunGeneratePlan()">Generate Plan</button>
     </div>

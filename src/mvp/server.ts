@@ -99,6 +99,19 @@ const server = createServer(async (request, response) => {
       });
     }
 
+    if (request.method === "GET" && requestUrl.pathname === "/api/runs") {
+      const runs = await store.listRuns(20);
+      const summary = runs.map((r) => ({
+        id: r.id,
+        createdAt: r.createdAt,
+        status: r.status,
+        prompt: r.prompt.slice(0, 80),
+        runName: r.plan?.runName ?? null,
+        reviewPath: r.reviewPath ?? null
+      }));
+      return sendJson(response, 200, { runs: summary });
+    }
+
     const runMatch = requestUrl.pathname.match(/^\/api\/runs\/([^/]+)$/);
     if (request.method === "GET" && runMatch) {
       const runId = decodeURIComponent(runMatch[1]);
