@@ -14,7 +14,7 @@ This file is the canonical context document for AI agents (including Claude Code
 3. User approves the plan
 4. SUN runs Playwright browser automation, capturing screenshots at each step
 5. Live screenshot previews and events stream to the UI during execution
-6. SUN produces a `/reviews/<run-id>` page with one recommendation, reasoning, screenshots, and copy-paste Codex markdown
+6. SUN produces a `/reviews/<run-id>` page with one recommendation, reasoning, screenshots, and a copy-paste AI prompt
 
 ---
 

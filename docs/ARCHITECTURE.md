@@ -9,7 +9,7 @@ SUN is a Docker-first browser evaluation MVP that listens on `http://localhost:3
 3. The user approves the plan.
 4. SUN runs a Playwright browser capture.
 5. SUN streams execution events and screenshot previews while the run is in progress.
-6. SUN publishes a review page with one recommendation, supporting reasoning, screenshots, and copy-paste Codex markdown.
+6. SUN publishes a review page with one recommendation, supporting reasoning, screenshots, and a copy-paste AI prompt.
 
 ## Runtime Pieces
 
@@ -28,7 +28,7 @@ The MVP stores each run as a directory under `artifacts/runs/<run-id>/`.
 - The browser UI streams live updates over `GET /api/runs/<run-id>/events`.
 - The completed run is published at `GET /reviews/<run-id>`.
 
-The review page is the main product output. It is intended to be copied into Codex as implementation guidance.
+The review page is the main product output. It is intended to be handed to an AI as implementation guidance.
 
 ## Environment
 

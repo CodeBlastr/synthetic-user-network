@@ -19,7 +19,7 @@ Once approved, SUN launches a Playwright browser, navigates the target, captures
 
 ![SUN recommendation page](docs/img/recommendation-page.png)
 
-Every run produces a dedicated review page: one recommendation, the reasoning behind it, annotated screenshots, and copy-paste Codex markdown you can hand directly to an LLM to implement.
+Every run produces a dedicated review page: one recommendation, the reasoning behind it, annotated screenshots, and a copy-paste AI prompt you can hand directly to an LLM to implement.
 
 ---
 

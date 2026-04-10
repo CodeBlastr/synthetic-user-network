@@ -543,7 +543,7 @@ export function renderReviewPage(run: RunRecord): string {
 
       <section class="card">
         <div class="eyebrow">Implementation Handoff</div>
-        <h2>Copy-Paste Markdown For Codex</h2>
+        <h2>Copy-Paste AI Prompt</h2>
         <p>Use this prompt to turn the approved recommendation into implementation work.</p>
         <textarea id="codexPrompt" readonly>${escapeHtml(analysis?.codexPromptMarkdown ?? "")}</textarea>
         <p><button id="copyButton">Copy Markdown</button></p>
