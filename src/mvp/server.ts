@@ -112,7 +112,9 @@ const server = createServer(async (request, response) => {
         if (parent.status !== "completed" && parent.status !== "failed") {
           return sendJson(response, 409, { error: "Parent run has not finished yet." });
         }
-        const retest = await store.createRetest(parentRunId);
+        const body = await parseJsonBody(request);
+        const appendPrompt = body.appendPrompt ? String(body.appendPrompt).trim() : undefined;
+        const retest = await store.createRetest(parentRunId, appendPrompt);
         runningRuns.add(retest.id);
         void runExecution(retest).finally(() => {
           runningRuns.delete(retest.id);

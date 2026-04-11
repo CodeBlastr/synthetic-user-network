@@ -165,6 +165,22 @@ export const reviewClientJs = `
     }
   }
 
+  // ── append-prompt toggle ─────────────────────────────────────────────────
+
+  function sunToggleAppend(e) {
+    e.preventDefault();
+    var row = document.getElementById("appendPromptRow");
+    var link = document.getElementById("appendPromptToggle");
+    if (!row) return;
+    var visible = row.style.display !== "none";
+    row.style.display = visible ? "none" : "block";
+    if (link) link.textContent = visible ? "+ Append to prompt" : "− Hide";
+    if (!visible) {
+      var ta = document.getElementById("appendPromptInput");
+      if (ta) ta.focus();
+    }
+  }
+
   // ── start a retest ───────────────────────────────────────────────────────
 
   function sunStartRetest() {
@@ -172,7 +188,13 @@ export const reviewClientJs = `
     if (!runId) return;
     var btn = document.getElementById("runVerificationBtn");
     if (btn) btn.disabled = true;
-    fetch("/api/runs/" + runId + "/retests", { method: "POST" })
+    var appendEl = document.getElementById("appendPromptInput");
+    var appendText = appendEl ? appendEl.value.trim() : "";
+    fetch("/api/runs/" + runId + "/retests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ appendPrompt: appendText || null })
+    })
       .then(function(res) {
         return res.json().then(function(body) {
           if (!res.ok) throw new Error(body.error || "Could not start retest.");
@@ -200,6 +222,7 @@ export const reviewClientJs = `
   // ── expose globals ───────────────────────────────────────────────────────
 
   window.sunStartRetest = sunStartRetest;
+  window.sunToggleAppend = sunToggleAppend;
 
   // ── init on page load ────────────────────────────────────────────────────
 

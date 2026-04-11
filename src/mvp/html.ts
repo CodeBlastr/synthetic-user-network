@@ -571,9 +571,13 @@ export function renderReviewPage(run: RunRecord): string {
           No verification tests have been run yet.
         </p>
         <div id="retestList" style="display:flex;flex-direction:column;gap:16px;"></div>
-        <p style="margin-top:20px;">
+        <p style="margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
           <button id="runVerificationBtn" onclick="window.sunStartRetest()">Run Verification Test</button>
+          <a href="#" id="appendPromptToggle" onclick="window.sunToggleAppend(event)" style="font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;">+ Append to prompt</a>
         </p>
+        <div id="appendPromptRow" style="display:none;margin-top:10px;">
+          <textarea id="appendPromptInput" placeholder="Additional context for this verification run, e.g. a new URL to test against…" style="width:100%;min-height:72px;font-family:var(--font-body);font-size:13px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:white;resize:vertical;"></textarea>
+        </div>
       </section>
     </main>
     <script src="/sun-review.js"></script>

@@ -195,17 +195,19 @@ export class RunStore {
       .slice(0, limit);
   }
 
-  async createRetest(parentRunId: string): Promise<RunRecord> {
+  async createRetest(parentRunId: string, appendPrompt?: string): Promise<RunRecord> {
     const parent = await this.load(parentRunId);
     if (!parent || !parent.plan) {
       throw new Error(`Parent run ${parentRunId} not found or has no plan.`);
     }
     const runId = randomUUID();
     const now = new Date().toISOString();
+    const basePrompt = this.buildVerificationPrompt(parent);
+    const prompt = appendPrompt ? `${basePrompt}\n\nAdditional context for this run:\n${appendPrompt}` : basePrompt;
     const run: RunRecord = {
       id: runId,
       parentRunId,
-      prompt: this.buildVerificationPrompt(parent),
+      prompt,
       createdAt: now,
       updatedAt: now,
       status: "planned",
