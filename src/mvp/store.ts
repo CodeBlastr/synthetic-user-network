@@ -205,7 +205,7 @@ export class RunStore {
     const run: RunRecord = {
       id: runId,
       parentRunId,
-      prompt: parent.prompt,
+      prompt: this.buildVerificationPrompt(parent),
       createdAt: now,
       updatedAt: now,
       status: "planned",
@@ -228,6 +228,30 @@ export class RunStore {
     return all
       .filter((r) => r.parentRunId === parentRunId)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  private buildVerificationPrompt(parent: RunRecord): string {
+    const analysis = parent.analysis;
+    if (!analysis) {
+      return `VERIFICATION RUN (re-testing previous run)\n\nOriginal prompt: ${parent.prompt}`;
+    }
+    return [
+      "VERIFICATION RUN — do not re-discover the product; verify whether a specific fix was implemented.",
+      "",
+      `Original test prompt: ${parent.prompt}`,
+      "",
+      "Previous SUN recommendation:",
+      `  ${analysis.recommendationTitle}`,
+      `  ${analysis.recommendedNextStep}`,
+      "",
+      "Implementation AI prompt that was applied:",
+      analysis.codexPromptMarkdown,
+      "",
+      "Your job: Navigate to the starting URL and verify whether the above recommendation has been successfully implemented.",
+      "Look for concrete evidence the change was made.",
+      "Report: did the fix work, partially work, or is the problem still present?",
+      "If the fix is confirmed, say so clearly. If not, describe what is still missing."
+    ].join("\n");
   }
 
   private async loadAllRuns(): Promise<RunRecord[]> {
